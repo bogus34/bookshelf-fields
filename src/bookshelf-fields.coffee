@@ -58,8 +58,56 @@ class Field
 class StringField extends Field
     constructor: (name, options) ->
         super name, options
+        @_normalize_options()
         @validations.push "minLength:#{@options.min_length}" if @options.min_length?
         @validations.push "maxLength:#{@options.max_length}" if @options.max_length?
+
+    _normalize_options: ->
+        for k of @options
+            switch k
+                when 'minLength'
+                    @options.min_length = @options[k]
+                    delete @options[k]
+                when 'maxLength'
+                    @options.max_length = @options[k]
+                    delete @options[k]
+
+class EmailField extends StringField
+    constructor: (name, options) ->
+        super name, options
+        @validations.push 'validEmail'
+
+class IntField extends Field
+    constructor: (name, options) ->
+        super name, options
+        @_normalize_options()
+        if options.positive
+            @validations.push 'natural'
+        else
+            @validations.push 'integer'
+        @validations.push "greaterThan:#{options.greater_than}" if options.greater_than?
+        @validations.push "greaterThanEqualTo:#{options.greater_than_equal_to}" if options.greater_than_equal_to?
+        @validations.push "lessThan:#{options.less_than}" if options.less_than?
+        @validations.push "lessThanEqualTo:#{options.less_than_equal_to}" if options.less_than_equal_to?
+
+    parse: (attrs) ->
+        attrs[@name] = parseInt attrs[@name] if @name of attrs
+
+    _normalize_options: ->
+        for k of @options
+            switch k
+                when 'gt', 'greaterThan'
+                    @options.greater_than = @options[k]
+                    delete @options[k]
+                when 'gte', 'greaterThanEqualTo', 'min'
+                    @options.greater_than_equal_to = @options[k]
+                    delete @options[k]
+                when 'lt', 'lessThan'
+                    @options.less_than = @options[k]
+                    delete @options[k]
+                when 'lte', 'lessThanEqualTo', 'max'
+                    @options.less_than_equal_to = @options[k]
+                    delete @options[k]
 
 enable_validation = (model) ->
     if model.prototype.initialize?
@@ -99,3 +147,5 @@ module.exports =
 
     Field: Field
     StringField: StringField
+    EmailField: EmailField
+    IntField: IntField
