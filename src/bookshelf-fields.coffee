@@ -5,16 +5,20 @@ plugin = (instance) ->
     model.validate = (self, attrs, options) ->
         if not ('validate' of options) or options.validate
             return CheckIt(@toJSON()).run(@validations)
-
-enable_validation = (self) ->
-    if self.prototype.initialize?
-        old_init = self.prototype.initialize
-        self.prototype.initialize = ->
-            @on 'saving', @validate, this
-            old_init.apply this, arguments
-    else
-        self.prototype.initialize = ->
-            @on 'saving', @validate, this
+    old_format = model.format
+    model.format = (attrs, options) ->
+        attrs = old_format.call this, attrs, options
+        if @__meta? and @__meta.fields
+            for f in @__meta.fields when 'format' of f
+                f.format attrs, options
+        attrs
+    old_parse = model.parse
+    model.parse = (resp, options) ->
+        attrs = old_parse.call this, resp, options
+        if @__meta? and @__meta.fields
+            for f in @__meta.fields when 'parse' of f
+                f.parse attrs, options
+        attrs
 
 class Field
     readable: true
@@ -24,9 +28,9 @@ class Field
         @validations.push 'required' if @options.required
     contribute_to_model: (model) ->
         proto = model.prototype
-        proto._meta ?= {}
-        proto._meta.fields ?= []
-        proto._meta.fields.push this
+        proto.__meta ?= {}
+        proto.__meta.fields ?= []
+        proto.__meta.fields.push this
         @append_validations(model)
         @create_property(model)
     append_validations: (model) ->
@@ -57,13 +61,41 @@ class StringField extends Field
         @validations.push "minLength:#{@options.min_length}" if @options.min_length?
         @validations.push "maxLength:#{@options.max_length}" if @options.max_length?
 
-Function::field = (cls, name, options) ->
+enable_validation = (model) ->
+    if model.prototype.initialize?
+        old_init = model.prototype.initialize
+        model.prototype.initialize = ->
+            @on 'saving', @validate, this
+            old_init.apply this, arguments
+    else
+        model.prototype.initialize = ->
+            @on 'saving', @validate, this
+
+field = (model, cls, name, options) ->
     f = new cls name, options
-    f.contribute_to_model this
+    f.contribute_to_model model
+
+fields = (model, specs...) ->
+    for [cls, name, options] in specs
+        field model, cls, name, options
+
+polute_function_prototype = ->
+    Function::field = (cls, name, options) -> field this, cls, name, options
+    Function::fields = (specs...) -> specs.unshift this; fields.apply this, specs
+    Function::enable_validation = -> enable_validation this
+
+cleanup_function_prototype = ->
+    delete Function::field
+    delete Function::fields
+    delete Function::enable_validation
 
 module.exports =
     plugin: plugin
+    field: field
+    fields: fields
     enable_validation: enable_validation
+    polute_function_prototype: polute_function_prototype
+    cleanup_function_prototype: cleanup_function_prototype
+
     Field: Field
     StringField: StringField
-
