@@ -127,7 +127,7 @@ fields = (model, specs...) ->
     for [cls, name, options] in specs
         field model, cls, name, options
 
-polute_function_prototype = ->
+pollute_function_prototype = ->
     Function::field = (cls, name, options) -> field this, cls, name, options
     Function::fields = (specs...) -> specs.unshift this; fields.apply this, specs
     Function::enable_validation = -> enable_validation this
@@ -142,7 +142,7 @@ module.exports =
     field: field
     fields: fields
     enable_validation: enable_validation
-    polute_function_prototype: polute_function_prototype
+    pollute_function_prototype: pollute_function_prototype
     cleanup_function_prototype: cleanup_function_prototype
 
     Field: Field

@@ -17,7 +17,7 @@ db = Bookshelf.initialize
 
 db.plugin Fields.plugin
 
-Fields.polute_function_prototype()
+Fields.pollute_function_prototype()
 
 class User extends db.Model
     tableName: 'users'
