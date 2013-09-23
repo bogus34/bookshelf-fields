@@ -81,10 +81,9 @@ class IntField extends Field
     constructor: (name, options) ->
         super name, options
         @_normalize_options()
+        @validations.push 'isInteger'
         if @options.positive
-            @validations.push 'natural'
-        else
-            @validations.push 'integer'
+            @validations.push 'isPositive'
         @validations.push "greaterThan:#{@options.greater_than}" if @options.greater_than?
         @validations.push "greaterThanEqualTo:#{@options.greater_than_equal_to}" if @options.greater_than_equal_to?
         @validations.push "lessThan:#{@options.less_than}" if @options.less_than?
