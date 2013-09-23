@@ -12,6 +12,10 @@
   ],
   "author": "\"Alexander Bogdanov\" <andorn@gmail.com>",
   "license": "BSD-2-Clause",
+  "repisitory": {
+    "type": "git",
+    "url": "https://github.com/bogus34/bookshelf-fields"
+  }
   "devDependencies": {
     "coffee-script": "~1.6.3",
     "chai": "*",

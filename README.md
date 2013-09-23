@@ -43,7 +43,7 @@ new User(username: 'bogus', email: 'bogus@test.com').save()
             console.log errors.toJSON() # { email: 'The email must contain a valid email address' }
 ```
 
-Example - coffeescript
+Example - javascript
 ----------------------
 
 ```javascript
