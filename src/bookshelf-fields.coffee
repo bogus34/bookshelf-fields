@@ -32,7 +32,7 @@ class Field
         proto.__meta.fields ?= []
         proto.__meta.fields.push this
         @append_validations(model)
-        @create_property(model)
+        @create_property(model) unless @name is 'id'
     append_validations: (model) ->
         proto = model.prototype
         proto.validations ?= {}
@@ -81,14 +81,14 @@ class IntField extends Field
     constructor: (name, options) ->
         super name, options
         @_normalize_options()
-        if options.positive
+        if @options.positive
             @validations.push 'natural'
         else
             @validations.push 'integer'
-        @validations.push "greaterThan:#{options.greater_than}" if options.greater_than?
-        @validations.push "greaterThanEqualTo:#{options.greater_than_equal_to}" if options.greater_than_equal_to?
-        @validations.push "lessThan:#{options.less_than}" if options.less_than?
-        @validations.push "lessThanEqualTo:#{options.less_than_equal_to}" if options.less_than_equal_to?
+        @validations.push "greaterThan:#{@options.greater_than}" if @options.greater_than?
+        @validations.push "greaterThanEqualTo:#{@options.greater_than_equal_to}" if @options.greater_than_equal_to?
+        @validations.push "lessThan:#{@options.less_than}" if @options.less_than?
+        @validations.push "lessThanEqualTo:#{@options.less_than_equal_to}" if @options.less_than_equal_to?
 
     parse: (attrs) ->
         attrs[@name] = parseInt attrs[@name] if @name of attrs
