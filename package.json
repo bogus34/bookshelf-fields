@@ -20,7 +20,9 @@
     "coffee-script": "~1.6.3",
     "chai": "*",
     "mocha": "*",
-    "sqlite3": "~2.1.17"
+    "sqlite3": "~2.1.17",
+    "chai-as-promised": "~4.0.0",
+    "when": "~2.4.0"
   },
   "dependencies": {
     "bookshelf": "~0.5.0",

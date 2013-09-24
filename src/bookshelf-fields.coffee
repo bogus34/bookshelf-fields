@@ -1,10 +1,22 @@
 CheckIt = require 'checkit'
 
+deep_clone = (obj) ->
+    res = {}
+    for k, v of obj
+        switch
+            when v instanceof Array
+                res[k] = v[..]
+            when typeof v is 'object'
+                res[k] = deep_clone v
+            else
+                res[k] = v
+    res
+
 plugin = (instance) ->
     model = instance.Model.prototype
     model.validate = (self, attrs, options) ->
         if not ('validate' of options) or options.validate
-            return CheckIt(@toJSON()).run(@validations)
+            CheckIt(@toJSON()).run(deep_clone(@validations))
     old_format = model.format
     model.format = (attrs, options) ->
         attrs = old_format.call this, attrs, options
@@ -77,20 +89,16 @@ class EmailField extends StringField
         super name, options
         @validations.push 'validEmail'
 
-class IntField extends Field
+class NumberField extends Field
     constructor: (name, options) ->
         super name, options
         @_normalize_options()
-        @validations.push 'isInteger'
         if @options.positive
             @validations.push 'isPositive'
         @validations.push "greaterThan:#{@options.greater_than}" if @options.greater_than?
         @validations.push "greaterThanEqualTo:#{@options.greater_than_equal_to}" if @options.greater_than_equal_to?
         @validations.push "lessThan:#{@options.less_than}" if @options.less_than?
         @validations.push "lessThanEqualTo:#{@options.less_than_equal_to}" if @options.less_than_equal_to?
-
-    parse: (attrs) ->
-        attrs[@name] = parseInt attrs[@name] if @name of attrs
 
     _normalize_options: ->
         for k of @options
@@ -107,6 +115,23 @@ class IntField extends Field
                 when 'lte', 'lessThanEqualTo', 'max'
                     @options.less_than_equal_to = @options[k]
                     delete @options[k]
+
+
+class IntField extends NumberField
+    constructor: (name, options) ->
+        super name, options
+        @validations.unshift 'isInteger'
+
+    parse: (attrs) ->
+        attrs[@name] = parseInt attrs[@name] if @name of attrs
+
+class FloatField extends NumberField
+    constructor: (name, options) ->
+        super name, options
+        @validations.unshift 'isNumeric'
+
+    parse: (attrs) ->
+        attrs[@name] = parseFloat attrs[@name] if @name of attrs
 
 enable_validation = (model) ->
     if model.prototype.initialize?
@@ -148,3 +173,4 @@ module.exports =
     StringField: StringField
     EmailField: EmailField
     IntField: IntField
+    FloatField: FloatField
