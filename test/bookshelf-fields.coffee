@@ -7,6 +7,12 @@ describe "Bookshelf fields", ->
     db = null
     User = Users = null
 
+    define_model = (fields...) ->
+        class User extends db.Model
+            tableName: 'users'
+            @enable_validation()
+            @fields fields...
+
     before (done) ->
         db = Bookshelf.initialize
             client: 'sqlite'
@@ -31,16 +37,9 @@ describe "Bookshelf fields", ->
     describe 'common behaviour', ->
         beforeEach ->
             F.pollute_function_prototype()
-
-            class User extends db.Model
-                tableName: 'users'
-                @field F.StringField, 'username', min_length: 3, max_length: 15
-                @field F.EmailField, 'email'
-                @enable_validation()
-
-            class Users extends db.Collection
-                model: User
-
+            User = define_model \
+                [F.StringField, 'username', min_length: 3, max_length: 15],
+                [F.EmailField, 'email']
             F.cleanup_function_prototype()
 
         it 'should create array of validations', ->
@@ -65,7 +64,6 @@ describe "Bookshelf fields", ->
                     done e
 
     describe 'Common options', ->
-        User = null
         before ->
             F.pollute_function_prototype()
         after (done) ->
@@ -73,10 +71,7 @@ describe "Bookshelf fields", ->
             db.knex('users').del().then -> done()
 
         it 'validates fields presense', (done) ->
-            class User extends db.Model
-                tableName: 'users'
-                @enable_validation()
-                @fields \
+            User = define_model \
                     [F.Field, 'username', nullable: false],
                     [F.Field, 'email', required: true]
 
@@ -91,7 +86,6 @@ describe "Bookshelf fields", ->
             When.all(attempts).should.notify done
 
     describe 'StringField', ->
-        User = null
         before ->
             F.pollute_function_prototype()
         after (done) ->
@@ -99,11 +93,7 @@ describe "Bookshelf fields", ->
             db.knex('users').del().then -> done()
 
         it 'validates min_length and max_length', (done) ->
-            class User extends db.Model
-                tableName: 'users'
-                @enable_validation()
-                @fields \
-                    [F.StringField, 'username', min_length: 5, max_length: 10]
+            User = define_model [F.StringField, 'username', min_length: 5, max_length: 10]
 
             User::validations.username.should.deep.equal ['minLength:5', 'maxLength:10']
 
@@ -116,15 +106,10 @@ describe "Bookshelf fields", ->
             When.all(attempts).should.notify done
 
         it 'uses additional names for length restrictions', ->
-            class User extends db.Model
-                tableName: 'users'
-                @enable_validation()
-                @field F.StringField, 'username', minLength: 5, maxLength: 10
-
+            User = define_model [F.StringField, 'username', minLength: 5, maxLength: 10]
             User::validations.username.should.deep.equal ['minLength:5', 'maxLength:10']
 
     describe 'EmailField', ->
-        User = null
         before ->
             F.pollute_function_prototype()
         after (done) ->
@@ -132,11 +117,7 @@ describe "Bookshelf fields", ->
             db.knex('users').del().then -> done()
 
         it 'validates email', (done) ->
-            class User extends db.Model
-                tableName: 'users'
-                @enable_validation()
-                @field F.EmailField, 'email'
-
+            User = define_model [F.EmailField, 'email']
             User::validations.email.should.deep.equal ['validEmail']
 
             attempts = [
@@ -147,7 +128,6 @@ describe "Bookshelf fields", ->
             When.all(attempts).should.notify done
 
     describe 'IntField', ->
-        User = null
         before ->
             F.pollute_function_prototype()
         after (done) ->
@@ -155,11 +135,7 @@ describe "Bookshelf fields", ->
             db.knex('users').del().then -> done()
 
         it 'validates integers', (done) ->
-            class User extends db.Model
-                tableName: 'users'
-                @enable_validation()
-                @field F.IntField, 'code'
-
+            User = define_model [F.IntField, 'code']
             User::validations.code.should.deep.equal ['isInteger']
 
             attempts = [
@@ -174,11 +150,7 @@ describe "Bookshelf fields", ->
             When.all(attempts).should.notify done
 
         it 'validates natural', (done) ->
-            class User extends db.Model
-                tableName: 'users'
-                @enable_validation()
-                @field F.IntField, 'code', positive: true
-
+            User = define_model [F.IntField, 'code', positive: true]
             User::validations.code.should.deep.equal ['isInteger', 'isPositive']
 
             attempts = [
@@ -190,11 +162,7 @@ describe "Bookshelf fields", ->
             When.all(attempts).should.notify done
 
         it 'validates bounds', (done) ->
-            class User extends db.Model
-                tableName: 'users'
-                @enable_validation()
-                @field F.IntField, 'code', greater_than: 1, less_than: 10
-
+            User = define_model [F.IntField, 'code', greater_than: 1, less_than: 10]
             User::validations.code.should.deep.equal ['isInteger', 'greaterThan:1', 'lessThan:10']
 
             attempts = [
@@ -206,7 +174,6 @@ describe "Bookshelf fields", ->
             When.all(attempts).should.notify done
 
     describe 'FloatField', ->
-        User = null
         before ->
             F.pollute_function_prototype()
         after (done) ->
@@ -214,11 +181,7 @@ describe "Bookshelf fields", ->
             db.knex('users').del().then -> done()
 
         it 'validates floats', (done) ->
-            class User extends db.Model
-                tableName: 'users'
-                @enable_validation()
-                @field F.FloatField, 'code'
-
+            User = define_model [F.FloatField, 'code']
             User::validations.code.should.deep.equal ['isNumeric']
 
             attempts = [
