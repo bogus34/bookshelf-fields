@@ -1,4 +1,6 @@
 {spawn} = require "child_process"
+fs = require 'fs'
+path = require 'path'
 
 # REPORTER = "dot"         # dot matrix
 # REPORTER = "doc"         # html documentation
@@ -27,13 +29,14 @@ task "test", "run tests", (options) ->
         ['--compilers', 'coffee:coffee-script',
         '--reporter', "#{REPORTER}",
         '--require', 'coffee-script',
-        '--require', 'test/test_helper.coffee',
-        '--colors', 'test/'],
+        '--require', path.join('test', 'test_helper.coffee'),
+        '--colors', 'test'],
         'env': env, 'cwd': process.cwd(), 'stdio': 'inherit'
 
 task "build", "build library", ->
     env = process.env
+    files = fs.readdirSync('src').map (f) -> path.join 'src', f
     spawn coffee,
-        ['--compile', '-o', 'lib/', 'src/bookshelf-fields.coffee'],
+        ['--compile', '-o', 'lib/'].concat(files),
         'env': env, 'cwd': process.cwd(), 'stdio': 'inherit'
 
