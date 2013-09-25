@@ -119,4 +119,10 @@ e.FloatField = class FloatField extends NumberField
     parse: (attrs) ->
         attrs[@name] = parseFloat attrs[@name] if @name of attrs
 
+e.BooleanField = class BooleanField extends Field
+    parse: (attrs) ->
+        attrs[@name] = !!attrs[@name] if @name of attrs
+    format: (attrs) ->
+        attrs[@name] = !!attrs[@name] if @name of attrs
+
 module.exports = e

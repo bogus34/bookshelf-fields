@@ -28,6 +28,7 @@ describe "Bookshelf fields", ->
                     table.string 'username', 255
                     table.string 'email', 255
                     table.float 'code'
+                    table.boolean 'flag'
                 .then ->
                     done()
                 .otherwise (errors) ->
@@ -230,3 +231,21 @@ describe "Bookshelf fields", ->
             ]
 
             When.all(attempts).should.notify done
+    describe 'BooleanField', ->
+        before ->
+            F.pollute_function_prototype()
+        after (done) ->
+            F.cleanup_function_prototype()
+            db.knex('users').del().then -> done()
+
+        it 'stores boolean values', (done) ->
+            User = define_model [F.BooleanField, 'flag']
+            new User(flag: 'some string').save()
+                .then (user) ->
+                    new User(id: user.id).fetch()
+                        .then (user) ->
+                            user.flag.should.be.true
+                            done()
+                        .otherwise (e) -> throw e
+                .otherwise (e) -> done(e)
+
