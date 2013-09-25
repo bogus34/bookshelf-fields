@@ -64,6 +64,32 @@ describe "Bookshelf fields", ->
                 .otherwise (e) ->
                     done e
 
+    describe 'Common options', ->
+        User = null
+        before ->
+            F.pollute_function_prototype()
+        after (done) ->
+            F.cleanup_function_prototype()
+            db.knex('users').del().then -> done()
+
+        it 'validates fields presense', (done) ->
+            class User extends db.Model
+                tableName: 'users'
+                @enable_validation()
+                @fields \
+                    [F.Field, 'username', nullable: false],
+                    [F.Field, 'email', required: true]
+
+            attempts = [
+                new User(username: 'foo', email: 'bar').save().should.be.fulfilled
+                new User(username: '', email: 'bar').save().should.be.fulfilled
+                new User(username: null, email: 'bar').save().should.be.rejected
+                new User(username: 'foo', email: '').save().should.be.rejected
+                new User(username: 'foo', email: null).save().should.be.rejected
+            ]
+
+            When.all(attempts).should.notify done
+
     describe 'StringField', ->
         User = null
         before ->
