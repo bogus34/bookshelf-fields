@@ -125,4 +125,19 @@ e.BooleanField = class BooleanField extends Field
     format: (attrs) ->
         attrs[@name] = !!attrs[@name] if @name of attrs
 
+e.DateTimeField = class DateTimeField extends Field
+    constructor: (name, options) ->
+        super name, options
+        @validations.push @_validate_datetime
+
+    parse: (attrs) ->
+        attrs[@name] = new Date(attrs[@name]) if @name of attrs
+    format: (attrs) ->
+        attrs[@name] = new Date(attrs[@name]) if @name of attrs and attrs[@name] not instanceof Date
+
+    _validate_datetime: (value) ->
+        return true if value instanceof Date
+        return true if typeof value is 'string' and not isNaN(Date.parse(value))
+        false
+
 module.exports = e

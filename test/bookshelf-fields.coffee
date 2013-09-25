@@ -29,6 +29,7 @@ describe "Bookshelf fields", ->
                     table.string 'email', 255
                     table.float 'code'
                     table.boolean 'flag'
+                    table.dateTime 'last_login'
                 .then ->
                     done()
                 .otherwise (errors) ->
@@ -249,3 +250,34 @@ describe "Bookshelf fields", ->
                         .otherwise (e) -> throw e
                 .otherwise (e) -> done(e)
 
+    describe.only 'DateTimeField', ->
+        before ->
+            F.pollute_function_prototype()
+        after (done) ->
+            F.cleanup_function_prototype()
+            db.knex('users').del().then -> done()
+
+        it 'stores Date objects', (done) ->
+            User = define_model [F.DateTimeField, 'last_login']
+            date = new Date('2013-09-25T15:00:00.000Z')
+            new User(last_login: date).save()
+                .then (user) ->
+                    new User(id: user.id).fetch()
+                        .then (user) ->
+                            user.last_login.should.be.an.instanceof Date
+                            user.last_login.toISOString().should.equal date.toISOString()
+                            done()
+                        .otherwise (e) -> throw e
+                .otherwise (e) -> done e
+
+        it 'validates date', (done) ->
+            User = define_model [F.DateTimeField, 'last_login']
+
+            attempts = [
+                new User(last_login: new Date()).save().should.be.fulfilled
+                new User(last_login: new Date().toUTCString()).save().should.be.fulfilled
+                new User(last_login: '1/1/1').save().should.be.fulfilled
+                new User(last_login: 'foobar').save().should.be.rejected
+            ]
+
+            When.all(attempts).should.notify done
