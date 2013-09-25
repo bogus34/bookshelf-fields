@@ -9,6 +9,8 @@ e.Field = class Field
         if 'nullable' of @options and !@options.nullable
             name = @name
             @model_validations.push (value) -> value[name]?
+        if 'choices' of @options
+            @validations.push @_validate_choices
     contribute_to_model: (model) ->
         proto = model.prototype
         proto.__meta ?= {}
@@ -40,6 +42,16 @@ e.Field = class Field
     mk_setter: ->
         name = @name
         (value) -> @set name, value
+    _validate_choices: (value) =>
+        choices = @options.choices
+        comparator = if @options.comparator? then @options.comparator else (a, b) -> a == b
+        if choices instanceof Array
+            for variant in choices
+                return true if comparator(value, variant)
+        else if typeof choices is 'object'
+            for variant of choices
+                return true if comparator(value, variant)
+        false
 
 e.StringField = class StringField extends Field
     constructor: (name, options) ->

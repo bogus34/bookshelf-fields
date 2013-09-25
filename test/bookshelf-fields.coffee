@@ -85,6 +85,42 @@ describe "Bookshelf fields", ->
 
             When.all(attempts).should.notify done
 
+        describe 'can use choices', ->
+            it 'with choices defined as array', (done) ->
+                available_names = ['foo', 'bar']
+                User = define_model [F.StringField, 'username', choices: available_names]
+                attempts = [
+                    new User(username: 'foo').save().should.be.fulfilled
+                    new User(username: 'noon').save().should.be.rejected
+                ]
+                When.all(attempts).should.notify done
+            it 'with choices defined as hash', (done) ->
+                available_names =
+                    foo: 'Foo name'
+                    bar: 'Bar name'
+                User = define_model [F.StringField, 'username', choices: available_names]
+                attempts = [
+                    new User(username: 'foo').save().should.be.fulfilled
+                    new User(username: 'noon').save().should.be.rejected
+                ]
+                When.all(attempts).should.notify done
+            it 'with custom equality checker', (done) ->
+                available_names = [
+                    {name: 'foo'}
+                    {name: 'bar'}
+                ]
+                class CustomField extends F.StringField
+                    format: (attrs) ->
+                        attrs[@name] = attrs[@name].name if @name of attrs
+                comparator = (a, b) ->
+                    a.name == b.name
+                User = define_model [CustomField, 'username', choices: available_names, comparator: comparator]
+                attempts = [
+                    new User(username: {name: 'foo'}).save().should.be.fulfilled
+                    new User(username: {name: 'noon'}).save().should.be.rejected
+                ]
+                When.all(attempts).should.notify done
+
     describe 'StringField', ->
         before ->
             F.pollute_function_prototype()
