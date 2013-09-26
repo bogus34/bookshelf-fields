@@ -140,4 +140,14 @@ e.DateTimeField = class DateTimeField extends Field
         return true if typeof value is 'string' and not isNaN(Date.parse(value))
         false
 
+e.DateField = class DateField extends DateTimeField
+    parse: (attrs) ->
+        if @name of attrs
+            d = new Date(attrs[@name])
+            attrs[@name] = new Date(d.getFullYear(), d.getMonth(), d.getDate())
+    format: (attrs) ->
+        if @name of attrs
+            d = unless attrs[@name] instanceof Date then new Date(attrs[@name]) else attrs[@name]
+            attrs[@name] = new Date(d.getFullYear(), d.getMonth(), d.getDate())
+
 module.exports = e

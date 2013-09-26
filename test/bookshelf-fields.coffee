@@ -46,6 +46,7 @@ describe "Bookshelf fields", ->
                     table.float 'code'
                     table.boolean 'flag'
                     table.dateTime 'last_login'
+                    table.date 'birth_date'
                 .then ->
                     done()
                 .otherwise (errors) ->
@@ -294,6 +295,40 @@ describe "Bookshelf fields", ->
                 new User(last_login: new Date().toUTCString()).save().should.be.fulfilled
                 new User(last_login: '1/1/1').save().should.be.fulfilled
                 new User(last_login: 'foobar').save().should.be.rejected
+            ]
+
+            When.all(attempts).should.notify done
+
+    describe 'DateField', ->
+        before ->
+            F.pollute_function_prototype()
+        after (done) ->
+            F.cleanup_function_prototype()
+            db.knex('users').del().then -> done()
+
+        truncate_date = (d) -> new Date(d.getFullYear(), d.getMonth(), d.getDate())
+
+        it 'stores Date objects', (done) ->
+            User = define_model [F.DateField, 'birth_date']
+            date = new Date('2013-09-25T15:00:00.000Z')
+            new User(birth_date: date).save()
+                .then (user) ->
+                    new User(id: user.id).fetch()
+                        .then (user) ->
+                            user.birth_date.should.be.an.instanceof Date
+                            user.birth_date.toISOString().should.equal truncate_date(date).toISOString()
+                            done()
+                        .otherwise (e) -> throw e
+                .otherwise (e) -> done e
+
+        it 'validates date', (done) ->
+            User = define_model [F.DateTimeField, 'birth_date']
+
+            attempts = [
+                new User(birth_date: new Date()).save().should.be.fulfilled
+                new User(birth_date: new Date().toUTCString()).save().should.be.fulfilled
+                new User(birth_date: '1/1/1').save().should.be.fulfilled
+                new User(birth_date: 'foobar').save().should.be.rejected
             ]
 
             When.all(attempts).should.notify done
