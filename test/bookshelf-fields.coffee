@@ -14,11 +14,27 @@ describe "Bookshelf fields", ->
             @fields fields...
 
     before (done) ->
-        db = Bookshelf.initialize
-            client: 'sqlite'
-            debug: true
-            connection:
-                filename: './test/test.db'
+        db_variant = process.env.BOOKSHELF_FIELDS_TESTS_DB_VARIANT
+        db_variant ?= 'sqlite'
+
+        switch db_variant
+            when 'sqlite'
+                db = Bookshelf.initialize
+                    client: 'sqlite'
+                    debug: not process.env.BOOKSHELF_FIELDS_TESTS_QUIET?
+                    connection:
+                        filename: ':memory:'
+            when 'pg', 'postgres'
+                db = Bookshelf.initialize
+                    client: 'pg'
+                    debug: not process.env.BOOKSHELF_FIELDS_TESTS_QUIET?
+                    connection:
+                        host: '127.0.0.1'
+                        user: 'test'
+                        password: 'test'
+                        database: 'test'
+                        charset: 'utf8'
+            else throw new Error "Unknown db variant: #{db_variant}"
         db.plugin F.plugin
         knex = db.knex
         knex.schema.dropTableIfExists('users')
@@ -250,7 +266,7 @@ describe "Bookshelf fields", ->
                         .otherwise (e) -> throw e
                 .otherwise (e) -> done(e)
 
-    describe.only 'DateTimeField', ->
+    describe 'DateTimeField', ->
         before ->
             F.pollute_function_prototype()
         after (done) ->
