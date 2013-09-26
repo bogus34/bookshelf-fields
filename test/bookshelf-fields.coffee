@@ -47,6 +47,7 @@ describe "Bookshelf fields", ->
                     table.boolean 'flag'
                     table.dateTime 'last_login'
                     table.date 'birth_date'
+                    table.json 'additional_data'
                 .then ->
                     done()
                 .otherwise (errors) ->
@@ -332,3 +333,39 @@ describe "Bookshelf fields", ->
             ]
 
             When.all(attempts).should.notify done
+
+    describe 'JSONField', ->
+        before ->
+            F.pollute_function_prototype()
+        after (done) ->
+            F.cleanup_function_prototype()
+            db.knex('users').del().then -> done()
+
+        it 'stores JSON objects', (done) ->
+            User = define_model [F.JSONField, 'additional_data']
+
+            data  =
+                nickname: 'bogus'
+                interests: ['nodejs', 'photography', 'tourism']
+
+            new User(additional_data: data).save()
+                .then (user) ->
+                    new User(id: user.id).fetch()
+                        .then (user) ->
+                            user.additional_data.should.deep.equal data
+                            done()
+                        .otherwise (e) -> throw e
+                .otherwise (e) -> done e
+
+        it 'validates JSON', (done) ->
+            User = define_model [F.JSONField, 'additional_data']
+
+            attempts = [
+                new User(additional_data: {foo: 'bar'}).save().should.be.fulfilled
+                new User(additional_data: JSON.stringify(foo: 'bar')).save().should.be.fulfilled
+                new User(additional_data: 42).save().should.be.rejected
+                new User(additional_data: 'not a json').save().should.be.rejected
+            ]
+
+            When.all(attempts).should.notify done
+

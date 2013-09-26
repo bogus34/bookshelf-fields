@@ -12,6 +12,7 @@ e.Field = class Field
         if 'choices' of @options
             @validations.push @_validate_choices
     contribute_to_model: (model) ->
+        @model = model
         proto = model.prototype
         proto.__meta ?= {}
         proto.__meta.fields ?= []
@@ -149,5 +150,21 @@ e.DateField = class DateField extends DateTimeField
         if @name of attrs
             d = unless attrs[@name] instanceof Date then new Date(attrs[@name]) else attrs[@name]
             attrs[@name] = new Date(d.getFullYear(), d.getMonth(), d.getDate())
+
+e.JSONField = class JSONField extends Field
+    constructor: (name, options) ->
+        super name, options
+        @validations.push @_validate_json
+    format: (attrs) ->
+        return unless attrs[@name] and typeof attrs[@name] is 'object'
+        attrs[@name] = JSON.stringify attrs[@name]
+    parse: (attrs) ->
+        return unless attrs[@name] and typeof attrs[@name] is 'string'
+        attrs[@name] = JSON.parse attrs[@name]
+    _validate_json: (value) ->
+        return true if typeof value is 'object'
+        return false unless typeof value is 'string'
+        JSON.parse value
+        true
 
 module.exports = e
