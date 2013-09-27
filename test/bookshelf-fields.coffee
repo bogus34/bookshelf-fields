@@ -92,7 +92,7 @@ describe "Bookshelf fields", ->
 
         it 'validates fields presense', (done) ->
             User = define_model \
-                    [F.Field, 'username', nullable: false],
+                    [F.Field, 'username', not_null: true],
                     [F.Field, 'email', required: true]
 
             attempts = [

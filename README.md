@@ -1,10 +1,109 @@
 bookshelf-fields
 ================
 
-[Bookshelf plugin](https://github.com/tgriesser/bookshelf) for simpler model validation and field format convertion.
+[Bookshelf](https://github.com/tgriesser/bookshelf) plugin for simpler model validation and field format convertion.
 
-Example - coffeescript
-----------------------
+* [Fields](#fields)
+* [Examples](#examples)
+
+
+## Basic usage
+
+First you need to require bookshelf-fields and apply exported plugin to an initialized database instance:
+
+    Fields = require 'bookshelf-fields'
+    db.plugin Fields.plugin
+
+Now you are ready to add fields information to models. There are two equivalent ways to do it: with
+exported functions 'field', 'fields' and 'enable_validation' and with the same methods, mixed into a
+Function prototype. If you choose the second way you need to call
+`Fields.pollute_function_prototype()` before.
+
+## Provided helpers
+
+* _plugin_ - method that mixes Fields functionality into a Bookshelf Model
+
+    `db.plugin Fields.plugin`
+    
+* _enable\_validation(model)_ - actually turn on validation for a specified model
+
+    `enable_validation(User)`
+
+* _field(model, field\_class, name, options)_ - add field to a model
+
+    `field(User, Fields.StringField, 'username', {max_length: 64})`
+
+* _fields(model, field\_definitions...)_ - add a bunch of fields to a model. field\_definitions is one
+  or more arrays [field\_class, name, options]
+
+* _pollute\_function\_prototype()_ - add methods _enable\_validation_, _field_ and _fields_ to a
+  Function prototype. Those methods have the same signature as a same-named functions excluding
+  first 'model' parameter.
+
+* _cleanup\_function\_prototype()_ - remove methods added in _pollute\_function\_prototype_
+
+## <a id="fields"></a>Fields
+
+### Common options
+
+* _required_: boolean - field must be provided and not empty
+* _not\_null_: boolean - field must not be null
+* _choices_: [array or hash] - field must have one of provided values
+
+    choices_ may be defined as an array (['foo', 'bar']) or as a hash ({foo: 'foo description', bar:
+    bar description'}). If hash used then field value is compared with hash keys.
+
+* _comparator_: function - used with _choices_ to provide custom equality checker.
+
+    Useful if fields value is an object and simple '==' is not adequate.
+
+### StringField
+
+* _min\_length_ | _minLength_: integer
+* _max\_length_ | _maxLength_: integer
+
+### EmailField
+
+StringField with simple check that value looks like a email address
+
+### NumberField
+
+Does no any validation - use IntField or FloatField instead!
+
+* _gt_ | _greater\_than_ | _greaterThan_: integer
+* _gte_ | _greater\_than\_equal\_to_ | _greaterThanEqualTo_ | _min_: integer
+* _lt_ | _less\_than_ | _lessThan_: integer
+* _lte_ | _less\_than\_equal\_to_ | _lessThanEqualTo_ | _max_: integer
+
+### IntField
+
+NumberField checked to be Integer. Applys parseInt when loaded.
+
+### FloatField
+
+NumberField checked to be Float. Applys parseFloat when loaded.
+
+### BooleanField
+
+Casts value to Boolean on parse and format.
+
+### DateTimeField
+
+Validates that value is a Date or a string than can be parsed as Date.
+Converts value to Date on parse and format.
+
+### DateField
+
+DateTimeField with stripped Time part.
+
+### JSONField
+
+Validates that value is object or a valid JSON string.
+Parses string from JSON when loaded and stringifies to JSON when formatted.
+
+## <a id="examples"></a>Examples
+
+### coffeescript
 
 ```coffeescript
 Bookshelf = require 'bookshelf'
@@ -43,8 +142,8 @@ new User(username: 'bogus', email: 'bogus@test.com').save()
             console.log errors.toJSON() # { email: 'The email must contain a valid email address' }
 ```
 
-Example - javascript
-----------------------
+###javascript
+
 
 ```javascript
 Bookshelf = require('bookshelf');

@@ -6,7 +6,7 @@ e.Field = class Field
         @validations = []
         @model_validations = []
         @validations.push 'required' if @options.required
-        if 'nullable' of @options and !@options.nullable
+        if 'not_null' of @options and @options.not_null
             name = @name
             @model_validations.push (value) -> value[name]?
         if 'choices' of @options
