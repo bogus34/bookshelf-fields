@@ -4,7 +4,28 @@ bookshelf-fields
 [Bookshelf](https://github.com/tgriesser/bookshelf) plugin for simpler model validation and field format convertion.
 
 * [Fields](#fields)
+* [Add custom behaviour](#custom_behaviour)
 * [Examples](#examples)
+
+## What exactly it does
+
+First of all when plugged in with call to db.plugin it (re)defines several db.Model methods:
+
+* validate - perform validation of model with [CheckIt](https://github.com/tgriesser/checkit). It uses instance array 'validations' for
+  field-level validation and array 'model_validations' for validating the whole model.
+
+* format/parse - for each field defined in model applys its format/parse method
+
+Then when field is applyed to a model it
+
+* stores the itself in the models  __meta.fields array
+
+* may add some validation rules to validations of model_validations arrays
+
+* defines with the same name. By default this property only calls basic set and get methods
+
+And finally when called to enable_validation it redefines models initialize method, adding
+subscription to event 'saving' to perform validation.
 
 
 ## Basic usage
@@ -100,6 +121,13 @@ DateTimeField with stripped Time part.
 
 Validates that value is object or a valid JSON string.
 Parses string from JSON when loaded and stringifies to JSON when formatted.
+
+## <a id="custom_behaviour"></a> Add custom behaviour
+
+You can add extra validations to models arrays validations and model_validations. Just make sure
+that you doesn't throw away validations added by fields. If you redefine initialize method call
+parent initialize or manage calling validate method on model saving. You can also redefine validate
+method.
 
 ## <a id="examples"></a>Examples
 

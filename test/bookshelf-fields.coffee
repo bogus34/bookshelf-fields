@@ -60,6 +60,8 @@ describe "Bookshelf fields", ->
             User = define_model \
                 [F.StringField, 'username', min_length: 3, max_length: 15],
                 [F.EmailField, 'email']
+
+        afterEach ->
             F.cleanup_function_prototype()
 
         it 'should create array of validations', ->
@@ -82,6 +84,21 @@ describe "Bookshelf fields", ->
                     done()
                 .otherwise (e) ->
                     done e
+
+        it 'should perserve custom validations', ->
+            f = ->
+            User = class User extends db.Model
+                tableName: 'users'
+                validations: {
+                    username: [f]
+                }
+                model_validations: [f]
+                @enable_validation()
+                @field F.StringField, 'username', min_length: 3, not_null: true
+
+            User::validations.should.deep.equal {username: [f, 'minLength:3']}
+            User::model_validations[0].should.equal f
+            User::model_validations[1].should.be.a 'function'
 
     describe 'Common options', ->
         before ->
