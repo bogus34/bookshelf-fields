@@ -1,7 +1,7 @@
 {
   "name": "bookshelf-fields",
-  "version": "0.1",
-  "description": "Bookshelf fields specification",
+  "version": "0.1.0",
+  "description": "Bookshelf fields",
   "main": "lib/bookshelf-fields.js",
   "scripts": {
     "test": "cake test"
