@@ -23,7 +23,8 @@
     "sqlite3": "~2.1.17",
     "chai-as-promised": "~4.0.0",
     "when": "~2.4.0",
-    "pg": "~2.6.2"
+    "pg": "~2.6.2",
+    "bookshelf-coffee-helpers": "*"
   },
   "dependencies": {
     "bookshelf": "~0.5.0",

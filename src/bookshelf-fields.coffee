@@ -12,7 +12,16 @@ deep_clone = (obj) ->
                 res[k] = v
     res
 
-plugin = (instance) ->
+plugin = (options) -> (instance) ->
+    instance.__helpers_fp ?= {}
+    instance.__helpers_fp.enable_validation = -> enable_validation(this)
+    instance.__helpers_fp.field = (args...) -> field this, args...
+    instance.__helpers_fp.fields = (args...) -> fields this, args...
+
+    options ?= {}
+    options.create_properties ?= true
+    instance.Model.prototype.__bookshelf_fields_options = options
+
     model = instance.Model.prototype
     model.validate = (self, attrs, options) ->
         if not ('validate' of options) or options.validate
@@ -56,23 +65,11 @@ fields = (model, specs...) ->
     for [cls, name, options] in specs
         field model, cls, name, options
 
-pollute_function_prototype = ->
-    Function::field = (cls, name, options) -> field this, cls, name, options
-    Function::fields = (specs...) -> specs.unshift this; fields.apply this, specs
-    Function::enable_validation = -> enable_validation this
-
-cleanup_function_prototype = ->
-    delete Function::field
-    delete Function::fields
-    delete Function::enable_validation
-
 exports =
     plugin: plugin
     field: field
     fields: fields
     enable_validation: enable_validation
-    pollute_function_prototype: pollute_function_prototype
-    cleanup_function_prototype: cleanup_function_prototype
 
 for k, f of require('./fields')
     exports[k] = f

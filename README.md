@@ -22,7 +22,9 @@ Then when field is applyed to a model it
 
 * may add some validation rules to validations of model_validations arrays
 
-* defines with the same name. By default this property only calls basic set and get methods
+* defines property with the same name. By default this property only calls basic set and get
+  methods. You may prevent creation of property by passing _dont\_create\_properties: true_
+  or _create\_properties: false_ to Fields.plugin or as an option of the field
 
 And finally when called to enable_validation it redefines models initialize method, adding
 subscription to event 'saving' to perform validation.
@@ -42,9 +44,9 @@ Function prototype. If you choose the second way you need to call
 
 ## Provided helpers
 
-* _plugin_ - method that mixes Fields functionality into a Bookshelf Model
+* _plugin(options)_ - method that mixes Fields functionality into a Bookshelf Model
 
-    `db.plugin Fields.plugin`
+    `db.plugin Fields.plugin()`
     
 * _enable\_validation(model)_ - actually turn on validation for a specified model
 
@@ -57,11 +59,13 @@ Function prototype. If you choose the second way you need to call
 * _fields(model, field\_definitions...)_ - add a bunch of fields to a model. field\_definitions is one
   or more arrays [field\_class, name, options]
 
-* _pollute\_function\_prototype()_ - add methods _enable\_validation_, _field_ and _fields_ to a
+## With [bookshelf-coffee-helpers](https://github.com/bogus34/bookshelf-coffee-helpers)
+
+* _db.pollute\_function\_prototype()_ - add methods _enable\_validation_, _field_ and _fields_ to a
   Function prototype. Those methods have the same signature as a same-named functions excluding
   first 'model' parameter.
 
-* _cleanup\_function\_prototype()_ - remove methods added in _pollute\_function\_prototype_
+* _db.cleanup\_function\_prototype()_ - remove methods added in _pollute\_function\_prototype_
 
 ## <a id="fields"></a>Fields
 

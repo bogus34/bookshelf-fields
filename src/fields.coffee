@@ -3,6 +3,7 @@ e.Field = class Field
     readable: true
     writable: true
     constructor: (@name, @options = {}) ->
+        @options.create_property ?= true
         @validations = []
         @model_validations = []
         @validations.push 'required' if @options.required
@@ -11,6 +12,9 @@ e.Field = class Field
             @model_validations.push (value) -> value[name]?
         if 'choices' of @options
             @validations.push @_validate_choices
+
+    plugin_option: (name) -> @model::__bookshelf_fields_options[name]
+
     contribute_to_model: (model) ->
         @model = model
         proto = model.prototype
@@ -18,7 +22,7 @@ e.Field = class Field
         proto.__meta.fields ?= []
         proto.__meta.fields.push this
         @append_validations(model)
-        @create_property(model) unless @name is 'id'
+        @create_property(model) if @plugin_option('create_properties') and @options['create_property'] and @name isnt 'id'
     append_validations: (model) ->
         proto = model.prototype
         proto.validations ?= {}

@@ -35,7 +35,8 @@ describe "Bookshelf fields", ->
                         database: 'test'
                         charset: 'utf8'
             else throw new Error "Unknown db variant: #{db_variant}"
-        db.plugin F.plugin
+        db.plugin require 'bookshelf-coffee-helpers'
+        db.plugin F.plugin()
         knex = db.knex
         knex.schema.dropTableIfExists('users')
             .then ->
@@ -56,13 +57,13 @@ describe "Bookshelf fields", ->
 
     describe 'common behaviour', ->
         beforeEach ->
-            F.pollute_function_prototype()
+            db.pollute_function_prototype()
             User = define_model \
                 [F.StringField, 'username', min_length: 3, max_length: 15],
                 [F.EmailField, 'email']
 
         afterEach ->
-            F.cleanup_function_prototype()
+            db.cleanup_function_prototype()
 
         it 'should create array of validations', ->
             User::validations.should.deep.equal
@@ -100,11 +101,32 @@ describe "Bookshelf fields", ->
             User::model_validations[0].should.equal f
             User::model_validations[1].should.be.a 'function'
 
+        it 'doesn\'t add properties if initialized with {create_properties: false}', ->
+            db2 = Bookshelf.initialize
+                client: 'sqlite'
+                connection:
+                    filename: ':memory:'
+
+            db2.plugin F.plugin(create_properties: false)
+
+            class User extends db2.Model
+                tableName: 'users'
+                @field F.StringField, 'username'
+
+            expect((new User(username: 'foo')).username).to.be.undefined
+
+        it 'doesn\'t add property if field has option {create_property: false}', ->
+            class User extends db.Model
+                tableName: 'users'
+                @field F.StringField, 'username', create_property: false
+
+            expect((new User(username: 'foo')).username).to.be.undefined
+
     describe 'Common options', ->
         before ->
-            F.pollute_function_prototype()
+            db.pollute_function_prototype()
         after (done) ->
-            F.cleanup_function_prototype()
+            db.cleanup_function_prototype()
             db.knex('users').del().then -> done()
 
         it 'validates fields presense', (done) ->
@@ -160,9 +182,9 @@ describe "Bookshelf fields", ->
 
     describe 'StringField', ->
         before ->
-            F.pollute_function_prototype()
+            db.pollute_function_prototype()
         after (done) ->
-            F.cleanup_function_prototype()
+            db.cleanup_function_prototype()
             db.knex('users').del().then -> done()
 
         it 'validates min_length and max_length', (done) ->
@@ -184,9 +206,9 @@ describe "Bookshelf fields", ->
 
     describe 'EmailField', ->
         before ->
-            F.pollute_function_prototype()
+            db.pollute_function_prototype()
         after (done) ->
-            F.cleanup_function_prototype()
+            db.cleanup_function_prototype()
             db.knex('users').del().then -> done()
 
         it 'validates email', (done) ->
@@ -202,9 +224,9 @@ describe "Bookshelf fields", ->
 
     describe 'IntField', ->
         before ->
-            F.pollute_function_prototype()
+            db.pollute_function_prototype()
         after (done) ->
-            F.cleanup_function_prototype()
+            db.cleanup_function_prototype()
             db.knex('users').del().then -> done()
 
         it 'validates integers', (done) ->
@@ -248,9 +270,9 @@ describe "Bookshelf fields", ->
 
     describe 'FloatField', ->
         before ->
-            F.pollute_function_prototype()
+            db.pollute_function_prototype()
         after (done) ->
-            F.cleanup_function_prototype()
+            db.cleanup_function_prototype()
             db.knex('users').del().then -> done()
 
         it 'validates floats', (done) ->
@@ -269,9 +291,9 @@ describe "Bookshelf fields", ->
             When.all(attempts).should.notify done
     describe 'BooleanField', ->
         before ->
-            F.pollute_function_prototype()
+            db.pollute_function_prototype()
         after (done) ->
-            F.cleanup_function_prototype()
+            db.cleanup_function_prototype()
             db.knex('users').del().then -> done()
 
         it 'stores boolean values', (done) ->
@@ -287,9 +309,9 @@ describe "Bookshelf fields", ->
 
     describe 'DateTimeField', ->
         before ->
-            F.pollute_function_prototype()
+            db.pollute_function_prototype()
         after (done) ->
-            F.cleanup_function_prototype()
+            db.cleanup_function_prototype()
             db.knex('users').del().then -> done()
 
         it 'stores Date objects', (done) ->
@@ -319,9 +341,9 @@ describe "Bookshelf fields", ->
 
     describe 'DateField', ->
         before ->
-            F.pollute_function_prototype()
+            db.pollute_function_prototype()
         after (done) ->
-            F.cleanup_function_prototype()
+            db.cleanup_function_prototype()
             db.knex('users').del().then -> done()
 
         truncate_date = (d) -> new Date(d.getFullYear(), d.getMonth(), d.getDate())
@@ -353,9 +375,9 @@ describe "Bookshelf fields", ->
 
     describe 'JSONField', ->
         before ->
-            F.pollute_function_prototype()
+            db.pollute_function_prototype()
         after (done) ->
-            F.cleanup_function_prototype()
+            db.cleanup_function_prototype()
             db.knex('users').del().then -> done()
 
         it 'stores JSON objects', (done) ->
