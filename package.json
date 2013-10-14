@@ -22,8 +22,8 @@
     "mocha": "*",
     "sqlite3": "~2.1.17",
     "chai-as-promised": "~4.0.0",
-    "when": "~2.4.0",
-    "pg": "~2.6.2",
+    "when": "~2.5.0",
+    "pg": "~2.7.0",
     "bookshelf-coffee-helpers": "*"
   },
   "dependencies": {
