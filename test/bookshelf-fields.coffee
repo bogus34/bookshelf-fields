@@ -21,13 +21,13 @@ describe "Bookshelf fields", ->
             when 'sqlite'
                 db = Bookshelf.initialize
                     client: 'sqlite'
-                    debug: not process.env.BOOKSHELF_FIELDS_TESTS_QUIET?
+                    debug: process.env.BOOKSHELF_FIELDS_TESTS_DEBUG?
                     connection:
                         filename: ':memory:'
             when 'pg', 'postgres'
                 db = Bookshelf.initialize
                     client: 'pg'
-                    debug: not process.env.BOOKSHELF_FIELDS_TESTS_QUIET?
+                    debug: process.env.BOOKSHELF_FIELDS_TESTS_DEBUG?
                     connection:
                         host: '127.0.0.1'
                         user: 'test'
