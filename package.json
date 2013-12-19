@@ -27,7 +27,7 @@
     "bookshelf-coffee-helpers": "*"
   },
   "dependencies": {
-    "bookshelf": "~0.5.0",
+    "bookshelf": "~0.6.0",
     "checkit": "~0.1.5"
   }
 }
