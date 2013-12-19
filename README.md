@@ -23,8 +23,8 @@ Then when field is applyed to a model it
 * may add some validation rules to validations of model_validations arrays
 
 * defines property with the same name. By default this property only calls basic set and get
-  methods. You may prevent creation of property by passing _dont\_create\_properties: true_
-  or _create\_properties: false_ to Fields.plugin or as an option of the field
+  methods. You may prevent creation of property by passing `dont_create_properties: true`
+  or `create_properties: false` to Fields.plugin or as an option of the field
 
 And finally when called to enable_validation it redefines models initialize method, adding
 subscription to event 'saving' to perform validation.
@@ -44,48 +44,48 @@ Function prototype. If you choose the second way you need to call
 
 ## Provided helpers
 
-* _plugin(options)_ - method that mixes Fields functionality into a Bookshelf Model
+* `plugin(options)` - method that mixes Fields functionality into a Bookshelf Model
 
     `db.plugin Fields.plugin()`
     
-* _enable\_validation(model)_ - actually turn on validation for a specified model
+* `enable_validation(model)` - actually turn on validation for a specified model
 
     `enable_validation(User)`
 
-* _field(model, field\_class, name, options)_ - add field to a model
+* `field(model, field_class, name, options)` - add field to a model
 
     `field(User, Fields.StringField, 'username', {max_length: 64})`
 
-* _fields(model, field\_definitions...)_ - add a bunch of fields to a model. field\_definitions is one
-  or more arrays [field\_class, name, options]
+* `fields(model, field_definitions...)` - add a bunch of fields to a model. field_definitions is one
+  or more arrays like [field_class, name, options]
 
 ## With [bookshelf-coffee-helpers](https://github.com/bogus34/bookshelf-coffee-helpers)
 
-* _db.pollute\_function\_prototype()_ - add methods _enable\_validation_, _field_ and _fields_ to a
+* `db.pollute_function_prototype()` - add methods `enable_validation`, `field` and `fields` to a
   Function prototype. Those methods have the same signature as a same-named functions excluding
   first 'model' parameter.
 
-* _db.cleanup\_function\_prototype()_ - remove methods added in _pollute\_function\_prototype_
+* `db.cleanup_function_prototype()` - remove methods added in `pollute_function_prototype`
 
 ## <a id="fields"></a>Fields
 
 ### Common options
 
-* _required_: boolean - field must be provided and not empty
-* _not\_null_: boolean - field must not be null
-* _choices_: [array or hash] - field must have one of provided values
+* `required`: boolean - field must be provided and not empty
+* `not_null`: boolean - field must not be null
+* `choices`: [array or hash] - field must have one of provided values
 
-    choices_ may be defined as an array (['foo', 'bar']) or as a hash ({foo: 'foo description', bar:
-    bar description'}). If hash used then field value is compared with hash keys.
+    `choices` may be defined as an array (`['foo', 'bar']`) or as a hash (`{foo: 'foo description', bar:
+    bar description'}`). If hash used then field value is compared with hash keys.
 
-* _comparator_: function - used with _choices_ to provide custom equality checker.
+* `comparator`: function - used with `choices` to provide custom equality checker.
 
     Useful if fields value is an object and simple '==' is not adequate.
 
 ### StringField
 
-* _min\_length_ | _minLength_: integer
-* _max\_length_ | _maxLength_: integer
+* `min_length` | `minLength`: integer
+* `max_length` | `maxLength`: integer
 
 ### EmailField
 
@@ -95,10 +95,10 @@ StringField with simple check that value looks like a email address
 
 Does no any validation - use IntField or FloatField instead!
 
-* _gt_ | _greater\_than_ | _greaterThan_: integer
-* _gte_ | _greater\_than\_equal\_to_ | _greaterThanEqualTo_ | _min_: integer
-* _lt_ | _less\_than_ | _lessThan_: integer
-* _lte_ | _less\_than\_equal\_to_ | _lessThanEqualTo_ | _max_: integer
+* `gt` | `greater_than` | `greaterThan`: integer
+* `gte` | `greater_than_equal_to` | `greaterThanEqualTo` | `min`: integer
+* 'lt` | `less_than` | `lessThan`: integer
+* `lte` | `less_than_equal_to` | `lessThanEqualTo` | `max`: integer
 
 ### IntField
 
