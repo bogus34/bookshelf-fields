@@ -34,7 +34,7 @@ task "test", "run tests", (options) ->
     spawn mocha,
         ['--compilers', 'coffee:coffee-script',
         '--reporter', "#{REPORTER}",
-        '--require', 'coffee-script',
+        '--require', 'coffee-script/register',
         '--require', path.join('test', 'test_helper.coffee'),
         '--colors', 'test'],
         'env': env, 'cwd': process.cwd(), 'stdio': 'inherit'

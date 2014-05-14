@@ -78,14 +78,16 @@ e.StringField = class StringField extends Field
 e.EmailField = class EmailField extends StringField
     constructor: (name, options) ->
         super name, options
-        @validations.push 'validEmail'
+        @validations.push 'email'
 
 e.NumberField = class NumberField extends Field
     constructor: (name, options) ->
         super name, options
         @_normalize_options()
         if @options.positive
-            @validations.push 'isPositive'
+            @validations.push 'naturalNonZero'
+        if @options.natural
+            @validations.push 'natural'
         @validations.push "greaterThan:#{@options.greater_than}" if @options.greater_than?
         @validations.push "greaterThanEqualTo:#{@options.greater_than_equal_to}" if @options.greater_than_equal_to?
         @validations.push "lessThan:#{@options.less_than}" if @options.less_than?
@@ -111,7 +113,7 @@ e.NumberField = class NumberField extends Field
 e.IntField = class IntField extends NumberField
     constructor: (name, options) ->
         super name, options
-        @validations.unshift 'isInteger'
+        @validations.unshift 'integer'
 
     parse: (attrs) ->
         attrs[@name] = parseInt attrs[@name] if @name of attrs

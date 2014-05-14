@@ -68,7 +68,7 @@ describe "Bookshelf fields", ->
         it 'should create array of validations', ->
             User::validations.should.deep.equal
                 username: ['minLength:3', 'maxLength:15']
-                email: ['validEmail']
+                email: ['email']
 
         it 'should run validations', (done) ->
             validation_called = false
@@ -85,6 +85,12 @@ describe "Bookshelf fields", ->
                     done()
                 .otherwise (e) ->
                     done e
+
+        it 'should run validations w/o save', ->
+            When.all [
+                new User(username: 'bogus').validate().should.be.fulfilled
+                new User(username: 'bogus', email: 'foobar').validate().should.be.rejected
+            ]
 
         it 'should perserve custom validations', ->
             f = ->
@@ -213,7 +219,7 @@ describe "Bookshelf fields", ->
 
         it 'validates email', (done) ->
             User = define_model [F.EmailField, 'email']
-            User::validations.email.should.deep.equal ['validEmail']
+            User::validations.email.should.deep.equal ['email']
 
             attempts = [
                 new User(email: 'foo').save().should.be.rejected
@@ -231,7 +237,7 @@ describe "Bookshelf fields", ->
 
         it 'validates integers', (done) ->
             User = define_model [F.IntField, 'code']
-            User::validations.code.should.deep.equal ['isInteger']
+            User::validations.code.should.deep.equal ['integer']
 
             attempts = [
                 new User(code: 'foo').save().should.be.rejected
@@ -245,8 +251,8 @@ describe "Bookshelf fields", ->
             When.all(attempts).should.notify done
 
         it 'validates natural', (done) ->
-            User = define_model [F.IntField, 'code', positive: true]
-            User::validations.code.should.deep.equal ['isInteger', 'isPositive']
+            User = define_model [F.IntField, 'code', natural: true]
+            User::validations.code.should.deep.equal ['integer', 'natural']
 
             attempts = [
                 new User(code: 10).save().should.be.fulfilled
@@ -258,7 +264,7 @@ describe "Bookshelf fields", ->
 
         it 'validates bounds', (done) ->
             User = define_model [F.IntField, 'code', greater_than: 1, less_than: 10]
-            User::validations.code.should.deep.equal ['isInteger', 'greaterThan:1', 'lessThan:10']
+            User::validations.code.should.deep.equal ['integer', 'greaterThan:1', 'lessThan:10']
 
             attempts = [
                 new User(code: 5).save().should.be.fulfilled

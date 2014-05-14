@@ -23,14 +23,14 @@ plugin = (options) -> (instance) ->
     instance.Model.prototype.__bookshelf_fields_options = options
 
     model = instance.Model.prototype
-    model.validate = (self, attrs, options) ->
+    model.validate = (self, attrs, options = {}) ->
         if not ('validate' of options) or options.validate
             json = @toJSON()
-            checkit = CheckIt(json).run(deep_clone(@validations))
+            checkit = CheckIt(@validations).run(json)
             if @model_validations? and @model_validations instanceof Array and @model_validations.length > 0
                 model_validations = @model_validations
                 checkit = checkit.then ->
-                    CheckIt(all: json).applyToAll(model_validations[..]).run()
+                    CheckIt(all: model_validations).run(all: json)
             checkit
     old_format = model.format
     model.format = (attrs, options) ->
