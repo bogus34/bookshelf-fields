@@ -1,6 +1,6 @@
 {
   "name": "bookshelf-fields",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Bookshelf fields",
   "main": "lib/bookshelf-fields.js",
   "scripts": {
