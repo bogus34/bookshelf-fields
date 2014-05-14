@@ -13,7 +13,7 @@ describe "Bookshelf fields", ->
             @enable_validation()
             @fields fields...
 
-    before (done) ->
+    before ->
         db_variant = process.env.BOOKSHELF_FIELDS_TESTS_DB_VARIANT
         db_variant ?= 'sqlite'
 
@@ -49,11 +49,6 @@ describe "Bookshelf fields", ->
                     table.dateTime 'last_login'
                     table.date 'birth_date'
                     table.json 'additional_data'
-                .then ->
-                    done()
-                .otherwise (errors) ->
-                    console.log errors
-                    throw errors
 
     describe 'common behaviour', ->
         beforeEach ->
@@ -70,7 +65,7 @@ describe "Bookshelf fields", ->
                 username: ['minLength:3', 'maxLength:15']
                 email: ['email']
 
-        it 'should run validations', (done) ->
+        it 'should run validations', ->
             validation_called = false
             f = ->
                 validation_called = true
@@ -82,9 +77,6 @@ describe "Bookshelf fields", ->
                     done new Error('then called instead of otherwise')
                 .otherwise (e) ->
                     validation_called.should.be.true
-                    done()
-                .otherwise (e) ->
-                    done e
 
         it 'should run validations w/o save', ->
             When.all [
@@ -131,11 +123,11 @@ describe "Bookshelf fields", ->
     describe 'Common options', ->
         before ->
             db.pollute_function_prototype()
-        after (done) ->
+        after ->
             db.cleanup_function_prototype()
-            db.knex('users').del().then -> done()
+            db.knex('users').truncate()
 
-        it 'validates fields presense', (done) ->
+        it 'validates fields presense', ->
             User = define_model \
                     [F.Field, 'username', not_null: true],
                     [F.Field, 'email', required: true]
@@ -148,18 +140,18 @@ describe "Bookshelf fields", ->
                 new User(username: 'foo', email: null).save().should.be.rejected
             ]
 
-            When.all(attempts).should.notify done
+            When.all(attempts)
 
         describe 'can use choices', ->
-            it 'with choices defined as array', (done) ->
+            it 'with choices defined as array', ->
                 available_names = ['foo', 'bar']
                 User = define_model [F.StringField, 'username', choices: available_names]
                 attempts = [
                     new User(username: 'foo').save().should.be.fulfilled
                     new User(username: 'noon').save().should.be.rejected
                 ]
-                When.all(attempts).should.notify done
-            it 'with choices defined as hash', (done) ->
+                When.all(attempts)
+            it 'with choices defined as hash', ->
                 available_names =
                     foo: 'Foo name'
                     bar: 'Bar name'
@@ -168,8 +160,8 @@ describe "Bookshelf fields", ->
                     new User(username: 'foo').save().should.be.fulfilled
                     new User(username: 'noon').save().should.be.rejected
                 ]
-                When.all(attempts).should.notify done
-            it 'with custom equality checker', (done) ->
+                When.all(attempts)
+            it 'with custom equality checker', ->
                 available_names = [
                     {name: 'foo'}
                     {name: 'bar'}
@@ -184,16 +176,16 @@ describe "Bookshelf fields", ->
                     new User(username: {name: 'foo'}).save().should.be.fulfilled
                     new User(username: {name: 'noon'}).save().should.be.rejected
                 ]
-                When.all(attempts).should.notify done
+                When.all(attempts)
 
     describe 'StringField', ->
         before ->
             db.pollute_function_prototype()
-        after (done) ->
+        after ->
             db.cleanup_function_prototype()
-            db.knex('users').del().then -> done()
+            db.knex('users').truncate()
 
-        it 'validates min_length and max_length', (done) ->
+        it 'validates min_length and max_length', ->
             User = define_model [F.StringField, 'username', min_length: 5, max_length: 10]
 
             User::validations.username.should.deep.equal ['minLength:5', 'maxLength:10']
@@ -204,7 +196,7 @@ describe "Bookshelf fields", ->
                 new User(username: 'justfine').save().should.be.fulfilled
             ]
 
-            When.all(attempts).should.notify done
+            When.all(attempts)
 
         it 'uses additional names for length restrictions', ->
             User = define_model [F.StringField, 'username', minLength: 5, maxLength: 10]
@@ -213,11 +205,11 @@ describe "Bookshelf fields", ->
     describe 'EmailField', ->
         before ->
             db.pollute_function_prototype()
-        after (done) ->
+        after ->
             db.cleanup_function_prototype()
-            db.knex('users').del().then -> done()
+            db.knex('users').truncate()
 
-        it 'validates email', (done) ->
+        it 'validates email', ->
             User = define_model [F.EmailField, 'email']
             User::validations.email.should.deep.equal ['email']
 
@@ -226,16 +218,16 @@ describe "Bookshelf fields", ->
                 new User(email: 'foo@bar.com').save().should.be.fulfilled
             ]
 
-            When.all(attempts).should.notify done
+            When.all(attempts)
 
     describe 'IntField', ->
         before ->
             db.pollute_function_prototype()
-        after (done) ->
+        after ->
             db.cleanup_function_prototype()
-            db.knex('users').del().then -> done()
+            db.knex('users').truncate()
 
-        it 'validates integers', (done) ->
+        it 'validates integers', ->
             User = define_model [F.IntField, 'code']
             User::validations.code.should.deep.equal ['integer']
 
@@ -248,9 +240,9 @@ describe "Bookshelf fields", ->
                 new User(code: '-10').save().should.be.fulfilled
             ]
 
-            When.all(attempts).should.notify done
+            When.all(attempts)
 
-        it 'validates natural', (done) ->
+        it 'validates natural', ->
             User = define_model [F.IntField, 'code', natural: true]
             User::validations.code.should.deep.equal ['integer', 'natural']
 
@@ -260,9 +252,9 @@ describe "Bookshelf fields", ->
                 new User(code: '-10').save().should.be.rejected
             ]
 
-            When.all(attempts).should.notify done
+            When.all(attempts)
 
-        it 'validates bounds', (done) ->
+        it 'validates bounds', ->
             User = define_model [F.IntField, 'code', greater_than: 1, less_than: 10]
             User::validations.code.should.deep.equal ['integer', 'greaterThan:1', 'lessThan:10']
 
@@ -272,16 +264,16 @@ describe "Bookshelf fields", ->
                 new User(code: 10).save().should.be.rejected
             ]
 
-            When.all(attempts).should.notify done
+            When.all(attempts)
 
     describe 'FloatField', ->
         before ->
             db.pollute_function_prototype()
-        after (done) ->
+        after ->
             db.cleanup_function_prototype()
-            db.knex('users').del().then -> done()
+            db.knex('users').truncate()
 
-        it 'validates floats', (done) ->
+        it 'validates floats', ->
             User = define_model [F.FloatField, 'code']
             User::validations.code.should.deep.equal ['isNumeric']
 
@@ -294,33 +286,30 @@ describe "Bookshelf fields", ->
                 new User(code: '-10.5').save().should.be.fulfilled
             ]
 
-            When.all(attempts).should.notify done
+            When.all(attempts)
     describe 'BooleanField', ->
         before ->
             db.pollute_function_prototype()
-        after (done) ->
+        after ->
             db.cleanup_function_prototype()
-            db.knex('users').del().then -> done()
+            db.knex('users').truncate()
 
-        it 'stores boolean values', (done) ->
+        it 'stores boolean values', ->
             User = define_model [F.BooleanField, 'flag']
             new User(flag: 'some string').save()
                 .then (user) ->
                     new User(id: user.id).fetch()
                         .then (user) ->
                             user.flag.should.be.true
-                            done()
-                        .otherwise (e) -> throw e
-                .otherwise (e) -> done(e)
 
     describe 'DateTimeField', ->
         before ->
             db.pollute_function_prototype()
-        after (done) ->
+        after ->
             db.cleanup_function_prototype()
-            db.knex('users').del().then -> done()
+            db.knex('users').truncate()
 
-        it 'stores Date objects', (done) ->
+        it 'stores Date objects', ->
             User = define_model [F.DateTimeField, 'last_login']
             date = new Date('2013-09-25T15:00:00.000Z')
             new User(last_login: date).save()
@@ -329,11 +318,8 @@ describe "Bookshelf fields", ->
                         .then (user) ->
                             user.last_login.should.be.an.instanceof Date
                             user.last_login.toISOString().should.equal date.toISOString()
-                            done()
-                        .otherwise (e) -> throw e
-                .otherwise (e) -> done e
 
-        it 'validates date', (done) ->
+        it 'validates date', ->
             User = define_model [F.DateTimeField, 'last_login']
 
             attempts = [
@@ -343,18 +329,18 @@ describe "Bookshelf fields", ->
                 new User(last_login: 'foobar').save().should.be.rejected
             ]
 
-            When.all(attempts).should.notify done
+            When.all(attempts)
 
     describe 'DateField', ->
         before ->
             db.pollute_function_prototype()
-        after (done) ->
+        after ->
             db.cleanup_function_prototype()
-            db.knex('users').del().then -> done()
+            db.knex('users').truncate()
 
         truncate_date = (d) -> new Date(d.getFullYear(), d.getMonth(), d.getDate())
 
-        it 'stores Date objects', (done) ->
+        it 'stores Date objects', ->
             User = define_model [F.DateField, 'birth_date']
             date = new Date('2013-09-25T15:00:00.000Z')
             new User(birth_date: date).save()
@@ -363,11 +349,8 @@ describe "Bookshelf fields", ->
                         .then (user) ->
                             user.birth_date.should.be.an.instanceof Date
                             user.birth_date.toISOString().should.equal truncate_date(date).toISOString()
-                            done()
-                        .otherwise (e) -> throw e
-                .otherwise (e) -> done e
 
-        it 'validates date', (done) ->
+        it 'validates date', ->
             User = define_model [F.DateTimeField, 'birth_date']
 
             attempts = [
@@ -377,16 +360,16 @@ describe "Bookshelf fields", ->
                 new User(birth_date: 'foobar').save().should.be.rejected
             ]
 
-            When.all(attempts).should.notify done
+            When.all(attempts)
 
     describe 'JSONField', ->
         before ->
             db.pollute_function_prototype()
-        after (done) ->
+        after ->
             db.cleanup_function_prototype()
-            db.knex('users').del().then -> done()
+            db.knex('users').truncate()
 
-        it 'stores JSON objects', (done) ->
+        it 'stores JSON objects', ->
             User = define_model [F.JSONField, 'additional_data']
 
             data  =
@@ -398,11 +381,8 @@ describe "Bookshelf fields", ->
                     new User(id: user.id).fetch()
                         .then (user) ->
                             user.additional_data.should.deep.equal data
-                            done()
-                        .otherwise (e) -> throw e
-                .otherwise (e) -> done e
 
-        it 'validates JSON', (done) ->
+        it 'validates JSON', ->
             User = define_model [F.JSONField, 'additional_data']
 
             attempts = [
@@ -412,5 +392,5 @@ describe "Bookshelf fields", ->
                 new User(additional_data: 'not a json').save().should.be.rejected
             ]
 
-            When.all(attempts).should.notify done
+            When.all(attempts)
 
