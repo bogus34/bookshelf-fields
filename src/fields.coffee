@@ -1,3 +1,4 @@
+isArray = require('util').isArray
 e = {}
 e.Field = class Field
     readable: true
@@ -6,12 +7,13 @@ e.Field = class Field
         @options.create_property ?= true
         @validations = []
         @model_validations = []
-        @validations.push 'required' if @options.required
+        @validations.push @normalize_rule('required', @options.required) if @options.required
         if 'not_null' of @options and @options.not_null
-            name = @name
-            @model_validations.push (value) -> value[name]?
+            @validations.push @normalize_rule('exists', @options.not_null)
         if 'choices' of @options
             @validations.push @_validate_choices
+        if 'validations' of @options
+            @validations.push.apply @validations, @options.validations
 
     plugin_option: (name) -> @model::__bookshelf_fields_options[name]
 
@@ -47,6 +49,21 @@ e.Field = class Field
     mk_setter: ->
         name = @name
         (value) -> @set name, value
+    normalize_rule: (rule, value) ->
+        if typeof value is 'object'
+            result = rule: rule
+            for k, v of value
+                result[k] = v
+            if 'value' of result
+                result.rule += ':' + result.value
+                delete result.value
+            result.params ||= []
+            result
+        else if typeof value is 'boolean'
+            rule
+        else
+            "#{rule}:#{value}"
+
     _validate_choices: (value) =>
         choices = @options.choices
         comparator = if @options.comparator? then @options.comparator else (a, b) -> a == b

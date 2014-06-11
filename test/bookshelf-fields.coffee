@@ -95,9 +95,8 @@ describe "Bookshelf fields", ->
                 @enable_validation()
                 @field F.StringField, 'username', min_length: 3, not_null: true
 
-            User::validations.should.deep.equal {username: [f, 'minLength:3']}
+            User::validations.should.deep.equal {username: [f, 'exists', 'minLength:3']}
             User::model_validations[0].should.equal f
-            User::model_validations[1].should.be.a 'function'
 
         it 'doesn\'t add properties if initialized with {create_properties: false}', ->
             db2 = Bookshelf.initialize
@@ -135,7 +134,7 @@ describe "Bookshelf fields", ->
             attempts = [
                 new User(username: 'foo', email: 'bar').save().should.be.fulfilled
                 new User(username: '', email: 'bar').save().should.be.fulfilled
-                new User(username: null, email: 'bar').save().should.be.rejected
+                new User(email: 'bar').save().should.be.rejected
                 new User(username: 'foo', email: '').save().should.be.rejected
                 new User(username: 'foo', email: null).save().should.be.rejected
             ]
