@@ -93,7 +93,7 @@ describe "Bookshelf fields", ->
                 }
                 model_validations: [f]
                 @enable_validation()
-                @field F.StringField, 'username', min_length: 3, not_null: true
+                @field F.StringField, 'username', min_length: 3, exists: true
 
             User::validations.should.deep.equal {username: [f, 'exists', 'minLength:3']}
             User::model_validations[0].should.equal f
@@ -128,7 +128,7 @@ describe "Bookshelf fields", ->
 
         it 'validates fields presense', ->
             User = define_model \
-                    [F.Field, 'username', not_null: true],
+                    [F.Field, 'username', exists: true],
                     [F.Field, 'email', required: true]
 
             attempts = [
@@ -144,16 +144,6 @@ describe "Bookshelf fields", ->
         describe 'can use choices', ->
             it 'with choices defined as array', ->
                 available_names = ['foo', 'bar']
-                User = define_model [F.StringField, 'username', choices: available_names]
-                attempts = [
-                    new User(username: 'foo').save().should.be.fulfilled
-                    new User(username: 'noon').save().should.be.rejected
-                ]
-                When.all(attempts)
-            it 'with choices defined as hash', ->
-                available_names =
-                    foo: 'Foo name'
-                    bar: 'Bar name'
                 User = define_model [F.StringField, 'username', choices: available_names]
                 attempts = [
                     new User(username: 'foo').save().should.be.fulfilled
@@ -393,3 +383,16 @@ describe "Bookshelf fields", ->
 
             When.all(attempts)
 
+    describe 'custom error messages', ->
+        before ->
+            db.pollute_function_prototype()
+        after ->
+            db.cleanup_function_prototype()
+        it 'uses provided messages', ->
+            User = define_model \
+                [F.StringField, 'foo', min_length: {value: 10, message: 'foo'}]
+
+            promise = new User(foo: 'bar').validate()
+            promise.should.be.rejected
+            promise.catch (e) ->
+                e.get('foo').message.should.equal 'foo'

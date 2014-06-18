@@ -7,11 +7,11 @@ e.Field = class Field
         @options.create_property ?= true
         @validations = []
         @model_validations = []
-        @validations.push @normalize_rule('required', @options.required) if @options.required
-        if 'not_null' of @options and @options.not_null
-            @validations.push @normalize_rule('exists', @options.not_null)
+        @_accept_rule 'required'
+        @_accept_rule 'exists'
         if 'choices' of @options
-            @validations.push @_validate_choices
+            @validations.push @normalize_rule @_validate_choices, @options.choices
+
         if 'validations' of @options
             @validations.push.apply @validations, @options.validations
 
@@ -50,47 +50,45 @@ e.Field = class Field
         name = @name
         (value) -> @set name, value
     normalize_rule: (rule, value) ->
-        if typeof value is 'object'
-            result = rule: rule
-            for k, v of value
-                result[k] = v
-            if 'value' of result
-                result.rule += ':' + result.value
-                delete result.value
-            result.params ||= []
-            result
-        else if typeof value is 'boolean'
-            rule
-        else
-            "#{rule}:#{value}"
+        switch
+            when typeof value is 'object' and not isArray(value)
+                result = rule: rule
+                for k, v of value
+                    result[k] = v
+                if 'value' of result
+                    if typeof rule is 'string'
+                        result.rule += ':' + result.value
+                    else
+                        result.params = result.value
+                    delete result.value
+                result.params ||= []
+                result
+            when typeof value is 'boolean'
+                rule
+            when typeof rule is 'string'
+                "#{rule}:#{value}"
+            else
+                @normalize_rule rule, value: value
 
-    _validate_choices: (value) =>
-        choices = @options.choices
+    _validate_choices: (value, choices...) =>
         comparator = if @options.comparator? then @options.comparator else (a, b) -> a == b
-        if choices instanceof Array
-            for variant in choices
-                return true if comparator(value, variant)
-        else if typeof choices is 'object'
-            for variant of choices
-                return true if comparator(value, variant)
+        for variant in choices
+            return true if comparator(value, variant)
         false
+
+    _accept_rule: (names, rule) ->
+        names = [names] unless isArray names
+        rule ?= names[0]
+        for name in names when name of @options
+            @validations.push @normalize_rule rule, @options[name]
+            return
 
 e.StringField = class StringField extends Field
     constructor: (name, options) ->
         super name, options
-        @_normalize_options()
-        @validations.push "minLength:#{@options.min_length}" if @options.min_length?
-        @validations.push "maxLength:#{@options.max_length}" if @options.max_length?
+        @_accept_rule ['minLength', 'min_length']
+        @_accept_rule ['maxLength', 'max_length']
 
-    _normalize_options: ->
-        for k of @options
-            switch k
-                when 'minLength'
-                    @options.min_length = @options[k]
-                    delete @options[k]
-                when 'maxLength'
-                    @options.max_length = @options[k]
-                    delete @options[k]
 
 e.EmailField = class EmailField extends StringField
     constructor: (name, options) ->
@@ -100,32 +98,12 @@ e.EmailField = class EmailField extends StringField
 e.NumberField = class NumberField extends Field
     constructor: (name, options) ->
         super name, options
-        @_normalize_options()
-        if @options.positive
-            @validations.push 'naturalNonZero'
-        if @options.natural
-            @validations.push 'natural'
-        @validations.push "greaterThan:#{@options.greater_than}" if @options.greater_than?
-        @validations.push "greaterThanEqualTo:#{@options.greater_than_equal_to}" if @options.greater_than_equal_to?
-        @validations.push "lessThan:#{@options.less_than}" if @options.less_than?
-        @validations.push "lessThanEqualTo:#{@options.less_than_equal_to}" if @options.less_than_equal_to?
-
-    _normalize_options: ->
-        for k of @options
-            switch k
-                when 'gt', 'greaterThan'
-                    @options.greater_than = @options[k]
-                    delete @options[k]
-                when 'gte', 'greaterThanEqualTo', 'min'
-                    @options.greater_than_equal_to = @options[k]
-                    delete @options[k]
-                when 'lt', 'lessThan'
-                    @options.less_than = @options[k]
-                    delete @options[k]
-                when 'lte', 'lessThanEqualTo', 'max'
-                    @options.less_than_equal_to = @options[k]
-                    delete @options[k]
-
+        @_accept_rule ['naturalNonZero', 'positive']
+        @_accept_rule 'natural'
+        @_accept_rule ['greaterThan', 'greater_than', 'gt']
+        @_accept_rule ['greaterThanEqualTo', 'greater_than_equal_to', 'gte', 'min']
+        @_accept_rule ['lessThan', 'less_than', 'lt']
+        @_accept_rule ['lessThanEqualTo', 'less_than_equal_to', 'lte', 'max']
 
 e.IntField = class IntField extends NumberField
     constructor: (name, options) ->
@@ -152,6 +130,7 @@ e.BooleanField = class BooleanField extends Field
 e.DateTimeField = class DateTimeField extends Field
     constructor: (name, options) ->
         super name, options
+
         @validations.push @_validate_datetime
 
     parse: (attrs) ->
