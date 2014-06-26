@@ -17,17 +17,18 @@
     "url": "https://github.com/bogus34/bookshelf-fields"
   },
   "devDependencies": {
-    "coffee-script": "~1.7.1",
+    "bookshelf-coffee-helpers": "*",
     "chai": "*",
-    "mocha": "*",
-    "sqlite3": "~2.2.3",
     "chai-as-promised": "~4.1.0",
-    "when": "~3.1.0",
-    "pg": "~3.1.0",
-    "bookshelf-coffee-helpers": "*"
+    "coffee-script": "~1.7.1",
+    "knex": "^0.6.18",
+    "mocha": "*",
+    "pg": "~3.3.0",
+    "sqlite3": "~2.2.3",
+    "when": "~3.2.0"
   },
   "dependencies": {
-    "bookshelf": "~0.6.0",
+    "bookshelf": "~0.7.0",
     "checkit": "~0.2.0-pre"
   }
 }

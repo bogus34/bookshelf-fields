@@ -1,3 +1,4 @@
+knex = require 'knex'
 Bookshelf = require 'bookshelf'
 F = require '../src/bookshelf-fields'
 When = require 'when'
@@ -19,13 +20,13 @@ describe "Bookshelf fields", ->
 
         switch db_variant
             when 'sqlite'
-                db = Bookshelf.initialize
+                db = Bookshelf knex
                     client: 'sqlite'
                     debug: process.env.BOOKSHELF_FIELDS_TESTS_DEBUG?
                     connection:
                         filename: ':memory:'
             when 'pg', 'postgres'
-                db = Bookshelf.initialize
+                db = Bookshelf knex
                     client: 'pg'
                     debug: process.env.BOOKSHELF_FIELDS_TESTS_DEBUG?
                     connection:
