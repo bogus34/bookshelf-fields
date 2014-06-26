@@ -138,7 +138,7 @@ Parses string from JSON when loaded and stringifies to JSON when formatted.
 
 * you may assign object instead of value to validation options:
 
-    `mix_length: {value: 10, message: '{{label}} id too short to be valid!'}`
+    `mix_length: {value: 10, message: '{{label}} is too short to be valid!'}`
 
     Additional options will be passed to checkit.
 
