@@ -41,8 +41,7 @@ task "test", "run tests", (options) ->
 
 task "build", "build library", ->
     env = process.env
-    files = fs.readdirSync('src').map (f) -> path.join 'src', f
     spawn coffee,
-        ['--compile', '-o', 'lib/'].concat(files),
+        ['--compile', '-o', 'lib/', 'src/']
         'env': env, 'cwd': process.cwd(), 'stdio': 'inherit'
 
