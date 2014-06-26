@@ -423,3 +423,17 @@ describe "Bookshelf fields", ->
                 .then (e) ->
                     e.get('email').message.should.equal 'foo: foo'
 
+        it 'can use i18n for messages', ->
+            db.Checkit.i18n.ru =
+                labels: {}
+                messages:
+                    email: 'Поле {{label}} должно содержать email-адрес'
+
+            class User extends db.Model
+                tableName: 'users'
+                @enable_validation(language: 'ru')
+                @field F.EmailField, 'email'
+
+            new User(email: 'bar').validate().should.be.rejected
+                .then (e) ->
+                    e.get('email').message.should.equal 'Поле email должно содержать email-адрес'

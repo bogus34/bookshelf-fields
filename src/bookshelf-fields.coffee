@@ -14,19 +14,20 @@ deep_clone = (obj) ->
 
 plugin = (options) -> (instance) ->
     instance.__helpers_fp ?= {}
-    instance.__helpers_fp.enable_validation = -> enable_validation(this)
+    instance.__helpers_fp.enable_validation = (options) -> enable_validation(this, options)
     instance.__helpers_fp.field = (args...) -> field this, args...
     instance.__helpers_fp.fields = (args...) -> fields this, args...
 
     options ?= {}
     options.create_properties ?= true
     instance.Model.prototype.__bookshelf_fields_options = options
+    instance.Checkit = CheckIt
 
     model = instance.Model.prototype
     model.validate = (self, attrs, options = {}) ->
         if not ('validate' of options) or options.validate
             json = @toJSON()
-            checkit = CheckIt(@validations).run(json)
+            checkit = CheckIt(@validations, @validation_options).run(json)
             if @model_validations? and @model_validations instanceof Array and @model_validations.length > 0
                 model_validations = @model_validations
                 checkit = checkit.then ->
@@ -47,7 +48,7 @@ plugin = (options) -> (instance) ->
                 f.parse attrs, options
         attrs
 
-enable_validation = (model) ->
+enable_validation = (model, options) ->
     if model.prototype.initialize?
         old_init = model.prototype.initialize
         model.prototype.initialize = ->
@@ -56,6 +57,7 @@ enable_validation = (model) ->
     else
         model.prototype.initialize = ->
             @on 'saving', @validate, this
+    model.prototype.validation_options = options if options
 
 field = (model, cls, name, options) ->
     f = new cls name, options
