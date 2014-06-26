@@ -30,7 +30,7 @@
   "dependencies": {
     "bookshelf": "~0.7.0",
     "checkit": "~0.2.0-pre"
-  }
+  },
   "scripts": {
       "prepublish": "cake build"
   }
