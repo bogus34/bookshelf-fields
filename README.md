@@ -4,6 +4,7 @@ bookshelf-fields
 [Bookshelf](https://github.com/tgriesser/bookshelf) plugin for simpler model validation and field format convertion.
 
 * [Fields](#fields)
+* [Advanced](#advanced)
 * [Add custom behaviour](#custom_behaviour)
 * [Examples](#examples)
 
@@ -44,11 +45,14 @@ Function prototype. If you choose the second way you need to call
 
 ## Provided helpers
 
+* `db.Checkit` - Checkit module used for validation
+
 * `plugin(options)` - method that mixes Fields functionality into a Bookshelf Model
 
     `db.plugin Fields.plugin()`
     
-* `enable_validation(model)` - actually turn on validation for a specified model
+* `enable_validation(model, options)` - actually turn on validation for a specified model. Options
+  are stored in Model.prototype.validation_options and passed to Checkit when validation applied.
 
     `enable_validation(User)`
 
@@ -72,7 +76,7 @@ Function prototype. If you choose the second way you need to call
 ### Common options
 
 * `required`: boolean - field must be provided and not empty
-* `not_null`: boolean - field must not be null
+* `exists`: boolean - field must not be undefined
 * `choices`: [array or hash] - field must have one of provided values
 
     `choices` may be defined as an array (`['foo', 'bar']`) or as a hash (`{foo: 'foo description', bar:
@@ -81,6 +85,10 @@ Function prototype. If you choose the second way you need to call
 * `comparator`: function - used with `choices` to provide custom equality checker.
 
     Useful if fields value is an object and simple '==' is not adequate.
+
+* `message`: used as a default error message.
+
+* `label`: used as a default field label and substituted to error message. Look at tgriesser/checkit for details.
 
 ### StringField
 
@@ -126,12 +134,25 @@ DateTimeField with stripped Time part.
 Validates that value is object or a valid JSON string.
 Parses string from JSON when loaded and stringifies to JSON when formatted.
 
+## <a id="advanced"></a> Advanced validation
+
+* you may assign object instead of value to validation options:
+
+    `mix_length: {value: 10, message: '{{label}} id too short to be valid!'}`
+
+    Additional options will be passed to checkit.
+
+* you may add complete Checkit validation rules to field with `validations` option:
+
+    `@field StringField 'username', validations: [{rule: 'minLength:5'}]`
+
 ## <a id="custom_behaviour"></a> Add custom behaviour
 
 You can add extra validations to models arrays validations and model_validations. Just make sure
 that you doesn't throw away validations added by fields. If you redefine initialize method call
 parent initialize or manage calling validate method on model saving. You can also redefine validate
 method.
+
 
 ## <a id="examples"></a>Examples
 
@@ -168,7 +189,7 @@ new User(username: 'bogus', email: 'bogus@test.com').save()
         console.log user.username # username is a property, calling @get('username') in getter
         console.log user.email
 
-        user.email = 'invalid-email' # simply calliong @set('email', 'invalid-email') in setter
+        user.email = 'invalid-email' # calls @set('email', 'invalid-email') in setter
 
         user.save().otherwise (errors) ->
             console.log errors.toJSON() # { email: 'The email must contain a valid email address' }
@@ -205,7 +226,7 @@ new User({username: 'bogus', email: 'bogus@test.com'}).save()
         console.log(user.username); // username is a property, calling @get('username') in getter
         console.log(user.email);
 
-        user.email = 'invalid-email'; // simply calliong @set('email', 'invalid-email') in setter
+        user.email = 'invalid-email'; // calls @set('email', 'invalid-email') in setter
 
         user.save().otherwise(function(errors) {
             console.log(errors.toJSON()); // { email: 'The email must contain a valid email address' }
