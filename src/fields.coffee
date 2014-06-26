@@ -50,7 +50,7 @@ e.Field = class Field
         name = @name
         (value) -> @set name, value
     normalize_rule: (rule, value) ->
-        switch
+        @_with_message switch
             when typeof value is 'object' and not isArray(value)
                 result = rule: rule
                 for k, v of value
@@ -83,6 +83,13 @@ e.Field = class Field
             @validations.push @normalize_rule rule, @options[name]
             return
 
+    _with_message: (rule) ->
+        return rule unless @options.message? or @options.label?
+        rule = {rule: rule} if typeof rule isnt 'object'
+        rule.message ?= @options.message if @options.message?
+        rule.label ?= @options.label if @options.label?
+        rule
+
 e.StringField = class StringField extends Field
     constructor: (name, options) ->
         super name, options
@@ -93,7 +100,7 @@ e.StringField = class StringField extends Field
 e.EmailField = class EmailField extends StringField
     constructor: (name, options) ->
         super name, options
-        @validations.push 'email'
+        @validations.push @_with_message 'email'
 
 e.NumberField = class NumberField extends Field
     constructor: (name, options) ->
@@ -108,7 +115,7 @@ e.NumberField = class NumberField extends Field
 e.IntField = class IntField extends NumberField
     constructor: (name, options) ->
         super name, options
-        @validations.unshift 'integer'
+        @validations.unshift @_with_message 'integer'
 
     parse: (attrs) ->
         attrs[@name] = parseInt attrs[@name] if @name of attrs
@@ -116,7 +123,7 @@ e.IntField = class IntField extends NumberField
 e.FloatField = class FloatField extends NumberField
     constructor: (name, options) ->
         super name, options
-        @validations.unshift 'isNumeric'
+        @validations.unshift @_with_message 'isNumeric'
 
     parse: (attrs) ->
         attrs[@name] = parseFloat attrs[@name] if @name of attrs
@@ -131,7 +138,7 @@ e.DateTimeField = class DateTimeField extends Field
     constructor: (name, options) ->
         super name, options
 
-        @validations.push @_validate_datetime
+        @validations.push @_with_message @_validate_datetime
 
     parse: (attrs) ->
         attrs[@name] = new Date(attrs[@name]) if @name of attrs
@@ -156,7 +163,7 @@ e.DateField = class DateField extends DateTimeField
 e.JSONField = class JSONField extends Field
     constructor: (name, options) ->
         super name, options
-        @validations.push @_validate_json
+        @validations.push @_with_message @_validate_json
     format: (attrs) ->
         return unless attrs[@name] and typeof attrs[@name] is 'object'
         attrs[@name] = JSON.stringify attrs[@name]

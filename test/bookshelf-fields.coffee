@@ -133,11 +133,11 @@ describe "Bookshelf fields", ->
                     [F.Field, 'email', required: true]
 
             attempts = [
-                new User(username: 'foo', email: 'bar').save().should.be.fulfilled
-                new User(username: '', email: 'bar').save().should.be.fulfilled
-                new User(email: 'bar').save().should.be.rejected
-                new User(username: 'foo', email: '').save().should.be.rejected
-                new User(username: 'foo', email: null).save().should.be.rejected
+                new User(username: 'foo', email: 'bar').validate().should.be.fulfilled
+                new User(username: '', email: 'bar').validate().should.be.fulfilled
+                new User(email: 'bar').validate().should.be.rejected
+                new User(username: 'foo', email: '').validate().should.be.rejected
+                new User(username: 'foo', email: null).validate().should.be.rejected
             ]
 
             When.all(attempts)
@@ -147,8 +147,8 @@ describe "Bookshelf fields", ->
                 available_names = ['foo', 'bar']
                 User = define_model [F.StringField, 'username', choices: available_names]
                 attempts = [
-                    new User(username: 'foo').save().should.be.fulfilled
-                    new User(username: 'noon').save().should.be.rejected
+                    new User(username: 'foo').validate().should.be.fulfilled
+                    new User(username: 'noon').validate().should.be.rejected
                 ]
                 When.all(attempts)
             it 'with custom equality checker', ->
@@ -163,10 +163,19 @@ describe "Bookshelf fields", ->
                     a.name == b.name
                 User = define_model [CustomField, 'username', choices: available_names, comparator: comparator]
                 attempts = [
-                    new User(username: {name: 'foo'}).save().should.be.fulfilled
-                    new User(username: {name: 'noon'}).save().should.be.rejected
+                    new User(username: {name: 'foo'}).validate().should.be.fulfilled
+                    new User(username: {name: 'noon'}).validate().should.be.rejected
                 ]
                 When.all(attempts)
+
+        it 'accepts custom validation rules like Checkit do', ->
+            User = define_model [
+                F.StringField, 'username', validations: [{rule: 'minLength:5', message: '{{label}}: foo', label: 'foo'}]
+            ]
+
+            new User(username: 'bar').validate()
+                .then -> throw 'Should be rejected'
+                .catch (e) -> e.get('username').message.should.equal 'foo: foo'
 
     describe 'StringField', ->
         before ->
@@ -181,9 +190,9 @@ describe "Bookshelf fields", ->
             User::validations.username.should.deep.equal ['minLength:5', 'maxLength:10']
 
             attempts = [
-                new User(username: 'foo').save().should.be.rejected
-                new User(username: 'Some nickname that is longer then 10 characters').save().should.be.rejected
-                new User(username: 'justfine').save().should.be.fulfilled
+                new User(username: 'foo').validate().should.be.rejected
+                new User(username: 'Some nickname that is longer then 10 characters').validate().should.be.rejected
+                new User(username: 'justfine').validate().should.be.fulfilled
             ]
 
             When.all(attempts)
@@ -204,8 +213,8 @@ describe "Bookshelf fields", ->
             User::validations.email.should.deep.equal ['email']
 
             attempts = [
-                new User(email: 'foo').save().should.be.rejected
-                new User(email: 'foo@bar.com').save().should.be.fulfilled
+                new User(email: 'foo').validate().should.be.rejected
+                new User(email: 'foo@bar.com').validate().should.be.fulfilled
             ]
 
             When.all(attempts)
@@ -222,12 +231,12 @@ describe "Bookshelf fields", ->
             User::validations.code.should.deep.equal ['integer']
 
             attempts = [
-                new User(code: 'foo').save().should.be.rejected
-                new User(code: '10foo').save().should.be.rejected
-                new User(code: 10.5).save().should.be.rejected
-                new User(code: 10).save().should.be.fulfilled
-                new User(code: '10').save().should.be.fulfilled
-                new User(code: '-10').save().should.be.fulfilled
+                new User(code: 'foo').validate().should.be.rejected
+                new User(code: '10foo').validate().should.be.rejected
+                new User(code: 10.5).validate().should.be.rejected
+                new User(code: 10).validate().should.be.fulfilled
+                new User(code: '10').validate().should.be.fulfilled
+                new User(code: '-10').validate().should.be.fulfilled
             ]
 
             When.all(attempts)
@@ -237,9 +246,9 @@ describe "Bookshelf fields", ->
             User::validations.code.should.deep.equal ['integer', 'natural']
 
             attempts = [
-                new User(code: 10).save().should.be.fulfilled
-                new User(code: -10).save().should.be.rejected
-                new User(code: '-10').save().should.be.rejected
+                new User(code: 10).validate().should.be.fulfilled
+                new User(code: -10).validate().should.be.rejected
+                new User(code: '-10').validate().should.be.rejected
             ]
 
             When.all(attempts)
@@ -249,9 +258,9 @@ describe "Bookshelf fields", ->
             User::validations.code.should.deep.equal ['integer', 'greaterThan:1', 'lessThan:10']
 
             attempts = [
-                new User(code: 5).save().should.be.fulfilled
-                new User(code: 1).save().should.be.rejected
-                new User(code: 10).save().should.be.rejected
+                new User(code: 5).validate().should.be.fulfilled
+                new User(code: 1).validate().should.be.rejected
+                new User(code: 10).validate().should.be.rejected
             ]
 
             When.all(attempts)
@@ -268,12 +277,12 @@ describe "Bookshelf fields", ->
             User::validations.code.should.deep.equal ['isNumeric']
 
             attempts = [
-                new User(code: 'foo').save().should.be.rejected
-                new User(code: '10foo').save().should.be.rejected
-                new User(code: 10.5).save().should.be.fulfilled
-                new User(code: 10).save().should.be.fulfilled
-                new User(code: '10.5').save().should.be.fulfilled
-                new User(code: '-10.5').save().should.be.fulfilled
+                new User(code: 'foo').validate().should.be.rejected
+                new User(code: '10foo').validate().should.be.rejected
+                new User(code: 10.5).validate().should.be.fulfilled
+                new User(code: 10).validate().should.be.fulfilled
+                new User(code: '10.5').validate().should.be.fulfilled
+                new User(code: '-10.5').validate().should.be.fulfilled
             ]
 
             When.all(attempts)
@@ -313,10 +322,10 @@ describe "Bookshelf fields", ->
             User = define_model [F.DateTimeField, 'last_login']
 
             attempts = [
-                new User(last_login: new Date()).save().should.be.fulfilled
-                new User(last_login: new Date().toUTCString()).save().should.be.fulfilled
-                new User(last_login: '1/1/1').save().should.be.fulfilled
-                new User(last_login: 'foobar').save().should.be.rejected
+                new User(last_login: new Date()).validate().should.be.fulfilled
+                new User(last_login: new Date().toUTCString()).validate().should.be.fulfilled
+                new User(last_login: '1/1/1').validate().should.be.fulfilled
+                new User(last_login: 'foobar').validate().should.be.rejected
             ]
 
             When.all(attempts)
@@ -344,10 +353,10 @@ describe "Bookshelf fields", ->
             User = define_model [F.DateTimeField, 'birth_date']
 
             attempts = [
-                new User(birth_date: new Date()).save().should.be.fulfilled
-                new User(birth_date: new Date().toUTCString()).save().should.be.fulfilled
-                new User(birth_date: '1/1/1').save().should.be.fulfilled
-                new User(birth_date: 'foobar').save().should.be.rejected
+                new User(birth_date: new Date()).validate().should.be.fulfilled
+                new User(birth_date: new Date().toUTCString()).validate().should.be.fulfilled
+                new User(birth_date: '1/1/1').validate().should.be.fulfilled
+                new User(birth_date: 'foobar').validate().should.be.rejected
             ]
 
             When.all(attempts)
@@ -376,24 +385,41 @@ describe "Bookshelf fields", ->
             User = define_model [F.JSONField, 'additional_data']
 
             attempts = [
-                new User(additional_data: {foo: 'bar'}).save().should.be.fulfilled
-                new User(additional_data: JSON.stringify(foo: 'bar')).save().should.be.fulfilled
-                new User(additional_data: 42).save().should.be.rejected
-                new User(additional_data: 'not a json').save().should.be.rejected
+                new User(additional_data: {foo: 'bar'}).validate().should.be.fulfilled
+                new User(additional_data: JSON.stringify(foo: 'bar')).validate().should.be.fulfilled
+                new User(additional_data: 42).validate().should.be.rejected
+                new User(additional_data: 'not a json').validate().should.be.rejected
             ]
 
             When.all(attempts)
 
-    describe 'custom error messages', ->
+    describe 'Custom error messages', ->
         before ->
             db.pollute_function_prototype()
         after ->
             db.cleanup_function_prototype()
+
         it 'uses provided messages', ->
             User = define_model \
                 [F.StringField, 'foo', min_length: {value: 10, message: 'foo'}]
 
-            promise = new User(foo: 'bar').validate()
-            promise.should.be.rejected
-            promise.catch (e) ->
-                e.get('foo').message.should.equal 'foo'
+            new User(foo: 'bar').validate().should.be.rejected
+                .then (e) ->
+                    e.get('foo').message.should.equal 'foo'
+
+        it 'uses field default error message and label', ->
+            User = define_model \
+                [F.StringField, 'username', min_length: 10, message: '{{label}}: foo', label: 'foo']
+
+            new User(username: 'bar').validate().should.be.rejected
+                .then (e) ->
+                    e.get('username').message.should.equal 'foo: foo'
+
+        it 'user field error message and label for field type validation', ->
+            User = define_model \
+                [F.EmailField, 'email', message: '{{label}}: foo', label: 'foo']
+
+            new User(email: 'bar').validate().should.be.rejected
+                .then (e) ->
+                    e.get('email').message.should.equal 'foo: foo'
+
