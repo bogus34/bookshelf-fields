@@ -24,7 +24,14 @@ e.Field = class Field
         proto.__meta.fields ?= []
         proto.__meta.fields.push this
         @append_validations(model)
-        @create_property(model) if @plugin_option('create_properties') and @options['create_property'] and @name isnt 'id'
+
+        if @plugin_option('create_properties') and
+          @options['create_property'] and
+          @name isnt 'id' and
+          @name not of model.prototype
+
+            @create_property(model)
+
     append_validations: (model) ->
         proto = model.prototype
         proto.validations ?= {}

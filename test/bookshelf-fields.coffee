@@ -120,6 +120,21 @@ describe "Bookshelf fields", ->
 
             expect((new User(username: 'foo')).username).to.be.undefined
 
+        it 'doesn\'t overwrite existing methods and properties', ->
+            class User extends db.Model
+                tableName: 'users'
+                @field F.StringField, 'query'
+
+            new User().query.should.be.a 'function'
+
+        it 'field named "id" doesnt overwrite internal id property', ->
+            class User extends db.Model
+                tableName: 'users'
+                @field F.StringField, 'id'
+
+            new User(id: 1).id.should.equal 1
+
+
     describe 'Common options', ->
         before ->
             db.pollute_function_prototype()
