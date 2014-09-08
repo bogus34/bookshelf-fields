@@ -26,7 +26,7 @@ plugin = (options) -> (instance) ->
     model = instance.Model.prototype
     model.validate = (self, attrs, options = {}) ->
         if not ('validate' of options) or options.validate
-            json = @toJSON()
+            json = @toJSON(validating: true)
             checkit = CheckIt(@validations, @validation_options).run(json)
             if @model_validations? and @model_validations instanceof Array and @model_validations.length > 0
                 model_validations = @model_validations
