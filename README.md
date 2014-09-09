@@ -36,7 +36,7 @@ subscription to event 'saving' to perform validation.
 First you need to require bookshelf-fields and apply exported plugin to an initialized database instance:
 
     Fields = require 'bookshelf-fields'
-    db.plugin Fields.plugin
+    db.plugin Fields.plugin(options)
 
 Now you are ready to add fields information to models. There are two equivalent ways to do it: with
 exported functions 'field', 'fields' and 'enable_validation' and with the same methods, mixed into a
