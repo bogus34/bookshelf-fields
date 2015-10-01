@@ -13,15 +13,15 @@ deep_clone = (obj) ->
     res
 
 plugin = (options) -> (instance) ->
-    instance.__helpers_fp ?= {}
-    instance.__helpers_fp.enable_validation = (options) -> enable_validation(this, options)
-    instance.__helpers_fp.field = (args...) -> field this, args...
-    instance.__helpers_fp.fields = (args...) -> fields this, args...
-
     options ?= {}
     options.create_properties ?= true
     instance.Model.prototype.__bookshelf_fields_options = options
     instance.Checkit = CheckIt
+
+    if options.augementModel || options.augement_model
+        instance.Model.enableValidation = instance.Model.enable_validation = (options) -> enable_validation(this, options)
+        instance.Model.field = (args...) -> field this, args...
+        instance.Model.fields = (args...) -> fields this, args...
 
     model = instance.Model.prototype
     model.validate = (self, attrs, options = {}) ->
@@ -67,13 +67,13 @@ fields = (model, specs...) ->
     for [cls, name, options] in specs
         field model, cls, name, options
 
-exports =
-    plugin: plugin
-    field: field
-    fields: fields
-    enable_validation: enable_validation
+plugin.plugin = plugin
+plugin.field = field
+plugin.fields = fields
+plugin.enable_validation = enable_validation
+plugin.enableValidation = enable_validation
 
 for k, f of require('./fields')
-    exports[k] = f
+    plugin[k] = f
 
-module.exports = exports
+module.exports = plugin

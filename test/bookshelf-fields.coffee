@@ -11,7 +11,7 @@ describe "Bookshelf fields", ->
     define_model = (fields...) ->
         class User extends db.Model
             tableName: 'users'
-            @enable_validation()
+            @enableValidation()
             @fields fields...
 
     before ->
@@ -37,8 +37,7 @@ describe "Bookshelf fields", ->
                         charset: 'utf8'
             else throw new Error "Unknown db variant: #{db_variant}"
         db = Bookshelf knex
-        db.plugin require 'bookshelf-coffee-helpers'
-        db.plugin F.plugin()
+        db.plugin F(augementModel: true)
         knex.schema.dropTableIfExists('users')
             .then ->
                 knex.schema.createTable 'users', (table) ->
@@ -53,13 +52,9 @@ describe "Bookshelf fields", ->
 
     describe 'common behaviour', ->
         beforeEach ->
-            db.pollute_function_prototype()
             User = define_model \
                 [F.StringField, 'username', min_length: 3, max_length: 15],
                 [F.EmailField, 'email']
-
-        afterEach ->
-            db.cleanup_function_prototype()
 
         it 'should create array of validations', ->
             User::validations.should.deep.equal
@@ -85,7 +80,7 @@ describe "Bookshelf fields", ->
                 new User(username: 'bogus', email: 'foobar').validate().should.be.rejected
             ]
 
-        it 'should perserve custom validations', ->
+        it 'should preserve custom validations', ->
             f = ->
             User = class User extends db.Model
                 tableName: 'users'
@@ -93,7 +88,7 @@ describe "Bookshelf fields", ->
                     username: [f]
                 }
                 model_validations: [f]
-                @enable_validation()
+                @enableValidation()
                 @field F.StringField, 'username', min_length: 3, exists: true
 
             User::validations.should.deep.equal {username: [f, 'exists', 'minLength:3']}
@@ -105,7 +100,7 @@ describe "Bookshelf fields", ->
                 connection:
                     filename: ':memory:'
 
-            db2.plugin F.plugin(create_properties: false)
+            db2.plugin F.plugin(augement_model: true, create_properties: false)
 
             class User extends db2.Model
                 tableName: 'users'
@@ -136,11 +131,7 @@ describe "Bookshelf fields", ->
 
 
     describe 'Common options', ->
-        before ->
-            db.pollute_function_prototype()
-        after ->
-            db.cleanup_function_prototype()
-            db.knex('users').truncate()
+        after -> db.knex('users').truncate()
 
         it 'validates fields presense', ->
             User = define_model \
@@ -193,11 +184,7 @@ describe "Bookshelf fields", ->
                 .catch (e) -> e.get('username').message.should.equal 'foo: foo'
 
     describe 'StringField', ->
-        before ->
-            db.pollute_function_prototype()
-        after ->
-            db.cleanup_function_prototype()
-            db.knex('users').truncate()
+        after -> db.knex('users').truncate()
 
         it 'validates min_length and max_length', ->
             User = define_model [F.StringField, 'username', min_length: 5, max_length: 10]
@@ -217,11 +204,7 @@ describe "Bookshelf fields", ->
             User::validations.username.should.deep.equal ['minLength:5', 'maxLength:10']
 
     describe 'EmailField', ->
-        before ->
-            db.pollute_function_prototype()
-        after ->
-            db.cleanup_function_prototype()
-            db.knex('users').truncate()
+        after -> db.knex('users').truncate()
 
         it 'validates email', ->
             User = define_model [F.EmailField, 'email']
@@ -235,11 +218,7 @@ describe "Bookshelf fields", ->
             When.all(attempts)
 
     describe 'IntField', ->
-        before ->
-            db.pollute_function_prototype()
-        after ->
-            db.cleanup_function_prototype()
-            db.knex('users').truncate()
+        after -> db.knex('users').truncate()
 
         it 'validates integers', ->
             User = define_model [F.IntField, 'code']
@@ -281,11 +260,7 @@ describe "Bookshelf fields", ->
             When.all(attempts)
 
     describe 'FloatField', ->
-        before ->
-            db.pollute_function_prototype()
-        after ->
-            db.cleanup_function_prototype()
-            db.knex('users').truncate()
+        after -> db.knex('users').truncate()
 
         it 'validates floats', ->
             User = define_model [F.FloatField, 'code']
@@ -303,11 +278,7 @@ describe "Bookshelf fields", ->
             When.all(attempts)
 
     describe 'BooleanField', ->
-        before ->
-            db.pollute_function_prototype()
-        after ->
-            db.cleanup_function_prototype()
-            db.knex('users').truncate()
+        after -> db.knex('users').truncate()
 
         it 'stores boolean values', ->
             User = define_model [F.BooleanField, 'flag']
@@ -318,11 +289,7 @@ describe "Bookshelf fields", ->
                             user.flag.should.be.true
 
     describe 'DateTimeField', ->
-        before ->
-            db.pollute_function_prototype()
-        after ->
-            db.cleanup_function_prototype()
-            db.knex('users').truncate()
+        after -> db.knex('users').truncate()
 
         it 'stores Date objects', ->
             User = define_model [F.DateTimeField, 'last_login']
@@ -347,11 +314,7 @@ describe "Bookshelf fields", ->
             When.all(attempts)
 
     describe 'DateField', ->
-        before ->
-            db.pollute_function_prototype()
-        after ->
-            db.cleanup_function_prototype()
-            db.knex('users').truncate()
+        after -> db.knex('users').truncate()
 
         truncate_date = (d) -> new Date(d.getFullYear(), d.getMonth(), d.getDate())
 
@@ -378,11 +341,7 @@ describe "Bookshelf fields", ->
             When.all(attempts)
 
     describe 'JSONField', ->
-        before ->
-            db.pollute_function_prototype()
-        after ->
-            db.cleanup_function_prototype()
-            db.knex('users').truncate()
+        after -> db.knex('users').truncate()
 
         it 'stores JSON objects', ->
             User = define_model [F.JSONField, 'additional_data']
@@ -410,11 +369,6 @@ describe "Bookshelf fields", ->
             When.all(attempts)
 
     describe 'Custom error messages', ->
-        before ->
-            db.pollute_function_prototype()
-        after ->
-            db.cleanup_function_prototype()
-
         it 'uses provided messages', ->
             User = define_model \
                 [F.StringField, 'foo', min_length: {value: 10, message: 'foo'}]
@@ -447,7 +401,7 @@ describe "Bookshelf fields", ->
 
             class User extends db.Model
                 tableName: 'users'
-                @enable_validation(language: 'ru')
+                @enableValidation(language: 'ru')
                 @field F.EmailField, 'email'
 
             new User(email: 'bar').validate().should.be.rejected
