@@ -130,7 +130,7 @@ e.IntField = class IntField extends NumberField
 e.FloatField = class FloatField extends NumberField
     constructor: (name, options) ->
         super name, options
-        @validations.unshift @_with_message 'isNumeric'
+        @validations.unshift @_with_message 'numeric'
 
     parse: (attrs) ->
         attrs[@name] = parseFloat attrs[@name] if @name of attrs

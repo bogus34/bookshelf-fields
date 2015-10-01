@@ -1,4 +1,4 @@
-knex = require 'knex'
+Knex = require 'knex'
 Bookshelf = require 'bookshelf'
 F = require '../src/bookshelf-fields'
 When = require 'when'
@@ -18,15 +18,15 @@ describe "Bookshelf fields", ->
         db_variant = process.env.BOOKSHELF_FIELDS_TESTS_DB_VARIANT
         db_variant ?= 'sqlite'
 
-        switch db_variant
+        knex = switch db_variant
             when 'sqlite'
-                db = Bookshelf knex
+                Knex
                     client: 'sqlite'
                     debug: process.env.BOOKSHELF_FIELDS_TESTS_DEBUG?
                     connection:
                         filename: ':memory:'
             when 'pg', 'postgres'
-                db = Bookshelf knex
+                Knex
                     client: 'pg'
                     debug: process.env.BOOKSHELF_FIELDS_TESTS_DEBUG?
                     connection:
@@ -36,9 +36,9 @@ describe "Bookshelf fields", ->
                         database: 'test'
                         charset: 'utf8'
             else throw new Error "Unknown db variant: #{db_variant}"
+        db = Bookshelf knex
         db.plugin require 'bookshelf-coffee-helpers'
         db.plugin F.plugin()
-        knex = db.knex
         knex.schema.dropTableIfExists('users')
             .then ->
                 knex.schema.createTable 'users', (table) ->
@@ -100,7 +100,7 @@ describe "Bookshelf fields", ->
             User::model_validations[0].should.equal f
 
         it 'doesn\'t add properties if initialized with {create_properties: false}', ->
-            db2 = Bookshelf.initialize
+            db2 = Bookshelf Knex
                 client: 'sqlite'
                 connection:
                     filename: ':memory:'
@@ -289,7 +289,7 @@ describe "Bookshelf fields", ->
 
         it 'validates floats', ->
             User = define_model [F.FloatField, 'code']
-            User::validations.code.should.deep.equal ['isNumeric']
+            User::validations.code.should.deep.equal ['numeric']
 
             attempts = [
                 new User(code: 'foo').validate().should.be.rejected
@@ -301,6 +301,7 @@ describe "Bookshelf fields", ->
             ]
 
             When.all(attempts)
+
     describe 'BooleanField', ->
         before ->
             db.pollute_function_prototype()
