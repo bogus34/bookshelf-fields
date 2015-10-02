@@ -39,9 +39,8 @@ First you need to require bookshelf-fields and apply exported plugin to an initi
     db.plugin Fields.plugin(options)
 
 Now you are ready to add fields information to models. There are two equivalent ways to do it: with
-exported functions 'field', 'fields' and 'enable_validation' and with the same methods, mixed into a
-Function prototype. If you choose the second way you need to call
-`Fields.pollute_function_prototype()` before.
+exported functions 'field', 'fields' and 'enableValidation' and with the same methods, mixed into a
+Model prototype. If you choose the second way you need to pass option `augement_model: true` to plugin.
 
 ## Provided helpers
 
@@ -62,14 +61,6 @@ Function prototype. If you choose the second way you need to call
 
 * `fields(model, field_definitions...)` - add a bunch of fields to a model. field_definitions is one
   or more arrays like [field_class, name, options]
-
-## With [bookshelf-coffee-helpers](https://github.com/bogus34/bookshelf-coffee-helpers)
-
-* `db.pollute_function_prototype()` - add methods `enable_validation`, `field` and `fields` to a
-  Function prototype. Those methods have the same signature as a same-named functions excluding
-  first 'model' parameter.
-
-* `db.cleanup_function_prototype()` - remove methods added in `pollute_function_prototype`
 
 ## <a id="fields"></a>Fields
 
@@ -167,9 +158,7 @@ db = Bookshelf.initialize
     connection:
         filename: './test.db'
 
-db.plugin Fields.plugin
-
-Fields.pollute_function_prototype()
+db.plugin Fields.plugin(augement_model: true)
 
 class User extends db.Model
     tableName: 'users'
@@ -177,8 +166,6 @@ class User extends db.Model
     @enable_validation()
     @field Fields.StringField, 'username', max_length: 32
     @field Fields.EmailField, 'email'
-
-Fields.cleanup_function_prototype()
 
 new User(username: 'bogus', email: 'bogus@test.com').save()
     .otherwise (errors) ->
