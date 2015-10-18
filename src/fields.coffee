@@ -125,7 +125,7 @@ e.IntField = class IntField extends NumberField
         @validations.unshift @_with_message 'integer'
 
     parse: (attrs) ->
-        attrs[@name] = parseInt attrs[@name] if @name of attrs
+        attrs[@name] = parseInt attrs[@name] if attrs[@name]?
 
 e.FloatField = class FloatField extends NumberField
     constructor: (name, options) ->
@@ -133,7 +133,7 @@ e.FloatField = class FloatField extends NumberField
         @validations.unshift @_with_message 'numeric'
 
     parse: (attrs) ->
-        attrs[@name] = parseFloat attrs[@name] if @name of attrs
+        attrs[@name] = parseFloat attrs[@name] if attrs[@name]?
 
 e.BooleanField = class BooleanField extends Field
     parse: (attrs) ->
@@ -148,9 +148,9 @@ e.DateTimeField = class DateTimeField extends Field
         @validations.push @_with_message @_validate_datetime
 
     parse: (attrs) ->
-        attrs[@name] = new Date(attrs[@name]) if @name of attrs
+        attrs[@name] = new Date(attrs[@name]) if attrs[@name]?
     format: (attrs) ->
-        attrs[@name] = new Date(attrs[@name]) if @name of attrs and attrs[@name] not instanceof Date
+        attrs[@name] = new Date(attrs[@name]) if attrs[@name]? and attrs[@name] not instanceof Date
 
     _validate_datetime: (value) ->
         return true if value instanceof Date
@@ -159,11 +159,11 @@ e.DateTimeField = class DateTimeField extends Field
 
 e.DateField = class DateField extends DateTimeField
     parse: (attrs) ->
-        if @name of attrs
+        if attrs[@name]?
             d = new Date(attrs[@name])
             attrs[@name] = new Date(d.getFullYear(), d.getMonth(), d.getDate())
     format: (attrs) ->
-        if @name of attrs
+        if attrs[@name]?
             d = unless attrs[@name] instanceof Date then new Date(attrs[@name]) else attrs[@name]
             attrs[@name] = new Date(d.getFullYear(), d.getMonth(), d.getDate())
 

@@ -259,6 +259,15 @@ describe "Bookshelf fields", ->
 
             When.all(attempts)
 
+        it 'keeps null value', ->
+            User = define_model [F.IntField, 'code']
+            new User(code: null).save()
+            .then (user) ->
+                expect(user.code).to.be.null
+                new User(id: user.id).fetch()
+            .then (user) ->
+                expect(user.code).to.be.null
+
     describe 'FloatField', ->
         after -> db.knex('users').truncate()
 
@@ -276,6 +285,15 @@ describe "Bookshelf fields", ->
             ]
 
             When.all(attempts)
+
+        it 'keeps null value', ->
+            User = define_model [F.FloatField, 'code']
+            new User(code: null).save()
+            .then (user) ->
+                expect(user.code).to.be.null
+                new User(id: user.id).fetch()
+            .then (user) ->
+                expect(user.code).to.be.null
 
     describe 'BooleanField', ->
         after -> db.knex('users').truncate()
@@ -313,6 +331,15 @@ describe "Bookshelf fields", ->
 
             When.all(attempts)
 
+        it 'keeps null value', ->
+            User = define_model [F.DateTimeField, 'last_login']
+            new User(last_login: null).save()
+            .then (user) ->
+                expect(user.last_login).to.be.null
+                new User(id: user.id).fetch()
+            .then (user) ->
+                expect(user.last_login).to.be.null
+
     describe 'DateField', ->
         after -> db.knex('users').truncate()
 
@@ -339,6 +366,15 @@ describe "Bookshelf fields", ->
             ]
 
             When.all(attempts)
+
+        it 'keeps null value', ->
+            User = define_model [F.DateField, 'birth_date']
+            new User(birth_date: null).save()
+            .then (user) ->
+                expect(user.birth_date).to.be.null
+                new User(id: user.id).fetch()
+            .then (user) ->
+                expect(user.birth_date).to.be.null
 
     describe 'JSONField', ->
         after -> db.knex('users').truncate()
