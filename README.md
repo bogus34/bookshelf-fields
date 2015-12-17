@@ -3,6 +3,8 @@ bookshelf-fields
 
 [Bookshelf](https://github.com/tgriesser/bookshelf) plugin for simpler model validation and field format convertion.
 
+Please look at [bookshelf-schema](https://github.com/bogus34/bookshelf-schema) - plugin that does the same and many more!
+
 * [Fields](#fields)
 * [Advanced](#advanced)
 * [Add custom behaviour](#custom_behaviour)
@@ -49,7 +51,7 @@ Model prototype. If you choose the second way you need to pass option `augement_
 * `plugin(options)` - method that mixes Fields functionality into a Bookshelf Model
 
     `db.plugin Fields.plugin()`
-    
+
 * `enable_validation(model, options)` - actually turn on validation for a specified model. Options
   are stored in Model.prototype.validation_options and passed to Checkit when validation applied.
 
